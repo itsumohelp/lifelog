@@ -9,6 +9,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.CLIENTID }}
+        tenant-id: ${{ secrets.TENANTID }}
+        subscription-id: ${{ secrets.SUBSCRIPTIONID }}
+
     - uses: azure/docker-login@v1
       with:
         login-server: lifelog.azurecr.io
