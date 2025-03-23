@@ -22,6 +22,7 @@ model user {
   image         String?
   accounts      account[]
   sessions      session[]
+  articles      article[]
   authenticator authenticator[] 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -78,6 +79,18 @@ model article {
   id            String   @unique
   context       String
   userId        String
+  todoId        String
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  todo todo @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model todo {
+  id            String   @unique
+  title         String
+  userId        String
+  articles      article[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

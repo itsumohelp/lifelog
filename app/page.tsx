@@ -1,6 +1,5 @@
 import UserButton from "@/components/user-button";
 import List from "@/ui/article/list";
-import {Form} from "@/ui/todo/form";
 
 export default function Home() {
   return (
@@ -12,11 +11,10 @@ export default function Home() {
         </div>
         <div className="col-span-3"  ><UserButton /></div>
       </div>
-      
         <List />
       </main>
   <footer className="p-4">
-      <Form />
+    aaaaaa
   </footer>
   </>
 );
