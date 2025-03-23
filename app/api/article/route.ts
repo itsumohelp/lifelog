@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     const session = await auth()
-    if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+    if (!session?.user) return NextResponse.json(null, { status: 401 })
         const titleList = await prisma.article.findMany({
             where: {
                 userId: session.user.id
