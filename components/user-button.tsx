@@ -16,7 +16,7 @@ export default async function UserButton() {
         <div className="col-span-2">
           <table><tbody><tr>
             <td width='40'>
-              <Image src={session.user.image || '/default-avatar.png'} width={40} height={40} vertical-align='middle' alt='' /></td>
+              <Image className='rounded-full' src={session.user.image || '/default-avatar.png'} width={40} height={40} vertical-align='middle' alt='' /></td>
             <td>　{session.user.name}</td>
           </tr></tbody></table>
         </div>

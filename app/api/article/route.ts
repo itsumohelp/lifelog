@@ -2,7 +2,6 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/prisma";
-import { randomUUID } from "crypto";
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -16,22 +15,13 @@ export async function GET() {
                 id: true,
                 context: true,
                 userId: true,
-            }
-        })
-        return NextResponse.json(titleList);    
-}
-
-export async function POST(request: Request) {
-    const receiveData = await request.json()
-    const session = await auth()
-    if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-    
-    await prisma.article.create({
-        data: {
-            id: randomUUID(),
-            context: receiveData.content,
-            userId: session.user.id ?? ""
-        }
+                user: {
+                    select: {
+                        name: true,
+                        image: true
+                    }
+                }
+            },
     })
-    return NextResponse.json(receiveData);
+        return NextResponse.json(titleList);    
 }

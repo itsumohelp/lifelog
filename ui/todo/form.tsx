@@ -1,14 +1,11 @@
 'use client';
-
-import { useRouter } from 'next/navigation';
 import { FormEvent } from 'react'
 
-export function Form() {
-  const router = useRouter()
+export function Form(props:{ todo: { id: string | undefined; }; }) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    await fetch('/api/article' , {
+    await fetch('/api/todo/' + props.todo.id , {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(Object.fromEntries(formData)),
