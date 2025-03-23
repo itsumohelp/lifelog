@@ -73,3 +73,11 @@ model authenticator {
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, credentialID])
 }
+
+model article {
+  id            String   @unique
+  context       String
+  userId        String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
