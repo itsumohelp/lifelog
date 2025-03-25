@@ -2,25 +2,25 @@
 import { FormEvent, MouseEventHandler, useEffect, useState } from "react";
 import Image from 'next/image'
 import { Form }  from '@/ui/todo/form'
-import { todo } from "node:test";
 
 export default function Page(props: any) {
 
   const [todo, setTodo] = useState<{id:string, title:string} | null>(null)
-  const [data, setData] = useState<[] | null>(null)
+  const [resData, setResData] = useState<[] | null>(null)
   const [isLoading, setLoading] = useState(true)
+
   
   useEffect(() => {
     fetch('/api/todo')
       .then((res) => res.json())
-      .then((data) => {
-        if (data!==null) {
-          setTodo(data)
-          fetch('/api/article/' + data.id)
-          .then((res) => res.json())
-          .then((data) => {
-            setData(data)
-          })  
+      .then((resData) => {
+        if (resData !==null) {
+          setTodo(resData)
+            fetch('/api/article/' + resData.id)
+            .then((res) => res.json())
+            .then((resData) => {
+              setResData(resData)
+            })  
         }
         setLoading(false)  
       })
@@ -38,22 +38,23 @@ export default function Page(props: any) {
     }
 
   if (isLoading) return <p>Loading...</p>
-  if (!data) return (
+  if (!resData) return (
     <div>
     <p>まだTODOがありません！</p>
-    <form onSubmit={onSubmit}>
-    <label htmlFor="text" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">regist</label>
-    <div className="relative">
-        <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-            </svg>
-        </div>
-        <input type="text" id="text" name="title" className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="be remember together!" required />
-        <button type="submit" className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Regust</button>
-    </div>
-    </form>
-    </div>
+{resData ?
+      <form onSubmit={onSubmit}>
+      <label htmlFor="text" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">regist</label>
+      <div className="relative">
+          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                  <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+              </svg>
+          </div>
+          <input type="text" id="text" name="title" className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="be remember together!" required />
+          <button type="submit" className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Regust</button>
+      </div>
+      </form>: <p>did you login</p> }
+      </div>
   )
 
   const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -70,6 +71,7 @@ export default function Page(props: any) {
   return (
     <div>
 <div className="relative overflow-x-auto">
+
   <h1>{todo?.title}</h1>
     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -80,7 +82,7 @@ export default function Page(props: any) {
             </tr>
         </thead>
         <tbody>
-        {data.map((item:any, index) => (
+        {resData.map((item:any, index) => (
             <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                 {item.context}
@@ -100,8 +102,7 @@ export default function Page(props: any) {
         ))}
         </tbody>
     </table>
-</div>
-
+    </div>
       <br/>
       <Form todo={{id:todo?.id}} />
     </div>

@@ -1,5 +1,6 @@
 import UserButton from "@/components/user-button";
 import List from "@/ui/article/list";
+import { SessionProvider } from "next-auth/react";
 
 export default function Home() {
   return (
@@ -11,10 +12,11 @@ export default function Home() {
         </div>
         <div className="col-span-3"  ><UserButton /></div>
       </div>
+      <SessionProvider>      
         <List />
+        </SessionProvider>
       </main>
   <footer className="p-4">
-    aaaaaa
   </footer>
   </>
 );

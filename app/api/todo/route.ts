@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export async function GET() {
     const session = await auth()
-    if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+    if (!session?.user) return NextResponse.json(null, { status: 401 })
         const todoList = await prisma.todo.findFirst({
             where: {
                 userId: session.user.id
@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
     const receiveData = await request.json()
     const session = await auth()
-    if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+    if (!session?.user) return NextResponse.json(null , { status: 401 })
     
     await prisma.todo.create({
         data: {
