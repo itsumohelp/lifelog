@@ -2,6 +2,7 @@
 import { FormEvent } from 'react'
 
 export function Form(props:{ todo: { id: string | undefined; }; }) {
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
