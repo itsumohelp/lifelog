@@ -23,6 +23,7 @@ model user {
   accounts      account[]
   sessions      session[]
   articles      article[]
+  todoshare     todoshare[]
   authenticator authenticator[] 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,6 +92,17 @@ model todo {
   title         String
   userId        String
   articles      article[]
+  todoshare     todoshare[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model todoshare {
+  id            String @unique
+  todoId        String
+  userId        String
+  todo todo @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
