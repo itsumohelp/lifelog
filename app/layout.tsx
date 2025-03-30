@@ -14,6 +14,7 @@ export default function RootLayout({
     <html lang="ja">
       <body className='flex flex-col min-h-screen'>
         {children}
+        <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
       </body>
     </html>
   );
