@@ -24,6 +24,8 @@ model user {
   sessions      session[]
   articles      article[]
   todoshare     todoshare[]
+  wallet        wallet[]
+  come          come[]
   authenticator authenticator[] 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -103,6 +105,28 @@ model todoshare {
   userId        String
   todo todo @relation(fields: [todoId], references: [id], onDelete: Cascade)
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model wallet {
+  id            String @unique
+  name          String
+  balance       Int
+  userId        String
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  come          come[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model come {
+  id            String @unique
+  amount        Int
+  userId        String
+  walletId      String
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
