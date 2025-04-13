@@ -9,6 +9,7 @@ interface Wallet {
 interface Come {
   id: string;
   amount: number;
+  paymentDate: string;
   createdAt: string;
 }
 
@@ -45,7 +46,7 @@ export default function Journal(props: { wallet: Wallet; come: Come[]; setWallet
           {props.come.map((item: Come, index) => (
             <tr key={index}>
               <td className="text-right">{item.amount}</td>
-              <td>{item.createdAt}</td>
+              <td>{item.paymentDate}</td>
               <td>
                 <button
                   type="button"

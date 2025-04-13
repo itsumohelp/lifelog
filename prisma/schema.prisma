@@ -125,6 +125,7 @@ model come {
   amount        Int
   userId        String
   walletId      String
+  paymentDate   DateTime @default(now())
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallet wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
