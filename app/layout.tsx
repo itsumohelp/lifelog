@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lifelog"
+  title: "ITSUMO"
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className='flex flex-col min-h-screen'>
+      <body className='flex flex-col h-screen'>
         {children}
         <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
       </body>
