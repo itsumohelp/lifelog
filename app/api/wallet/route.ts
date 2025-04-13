@@ -5,10 +5,18 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient()
 
+interface Come {
+    id: string;
+    name: string;
+    balance: number;
+    last7balance: number;
+    last30balance: number;
+  }
+
 export async function GET() {
     const session = await auth()
     if (!session?.user) return NextResponse.json(null, { status: 401 })
-        const todoList = await prisma.wallet.findFirst({
+        const walletList = await prisma.wallet.findFirst({
             where: {
                 userId: session.user.id
             },
@@ -18,7 +26,42 @@ export async function GET() {
                 balance: true,
                 }
         })
-        return NextResponse.json(todoList);    
+
+        const last7Balance = await prisma.come.groupBy({
+            by: ['userId'],
+            where: {
+                userId: session.user.id,
+                paymentDate: {
+                    gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+                }
+            },
+            _sum: {
+                amount: true,
+            },
+        })
+
+        const last30Balance = await prisma.come.groupBy({
+            by: ['userId'],
+            where: {
+                userId: session.user.id,
+                paymentDate: {
+                    gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+                }
+            },
+            _sum: {
+                amount: true,
+            },
+        })
+
+        const Wallet: Come = {
+            id: walletList?.id ?? "",
+            name: walletList?.name ?? "",
+            balance: walletList?.balance ?? 0,
+            last7balance: last7Balance[0]?._sum.amount ?? 0, 
+            last30balance: last30Balance[0]?._sum.amount ?? 0,
+        };
+
+        return NextResponse.json(Wallet);    
 }
 
 export async function POST(request: Request) {

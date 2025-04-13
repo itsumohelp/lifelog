@@ -16,7 +16,8 @@ export async function POST(request: NextRequest,{ params, }:  { params: Promise<
              id: randomUUID(),
              amount: Number(receiveData.amount),
              userId: session.user.id ?? "",
-             walletId: (await params).walletid
+             walletId: (await params).walletid,
+             paymentDate: new Date(receiveData.paymentDate)
                 }
             })
         } catch (error) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest,{ params, }:  { params: Promise<{
             select: {
                 id: true,
                 amount: true,
-                createdAt: true,
+                paymentDate: true,
                 userId: true,
                 user: {
                     select: {
