@@ -19,6 +19,10 @@ export default function Page() {
     amount: number;
     createdAt: string;
     paymentDate: string;
+    user : {
+      name: string;
+      image: string;
+    }
   }
   const [walletData, setWalletData] = useState<Wallet | null>(null);
   const [comeData, setComeData] = useState<Come[] | null>(null);

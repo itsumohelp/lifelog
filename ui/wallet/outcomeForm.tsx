@@ -44,7 +44,7 @@ export function OutcomeForm(props: { wallet: Wallet; setWallet: any; journalUpda
   
   return (
     <form onSubmit={onSubmit}>
-      <div className="relative mb-5">
+      <div className="mb-5">
         <table width="100%">
           <tbody>
           <tr>
@@ -59,13 +59,11 @@ export function OutcomeForm(props: { wallet: Wallet; setWallet: any; journalUpda
                </td>
           </tr>
           <tr>
-            <td className="pr-2">
+            <td className="pt-2 pr-2">
             <label htmlFor="labels-range-input" className="sr-only">Labels range</label>
-              <input id="labels-range-input" type="range" name="amount" min="100" max="10000" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
-              <span className="text-sm text-gray-500 dark:text-gray-400 absolute start-0 -bottom-5">100</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 absolute start-75/100 -bottom-5">10,000</span>
+              <input id="labels-range-input" type="range" name="amount" min="100" max="10000" className="w-full ml-5 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
             </td>
-          <td width="70"><button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button></td>
+          <td width="110" className='text-center'><button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button></td>
         </tr>
       </tbody>
       </table>
