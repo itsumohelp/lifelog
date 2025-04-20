@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ThemeModeScript } from 'flowbite-react';
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,9 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        <ThemeModeScript />
+        <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+      </head>
       <body className='flex flex-col min-h-screen'>
         {children}
-        <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
       </body>
     </html>
   );

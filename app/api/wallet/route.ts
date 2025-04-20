@@ -24,7 +24,7 @@ export async function GET() {
                 id: true,
                 name: true,
                 balance: true,
-                }
+            }
         })
 
         const last7Balance = await prisma.come.groupBy({

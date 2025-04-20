@@ -1,38 +1,20 @@
+import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const prisma = new PrismaClient()
-export async function GET() {
-    const cookieStore = await cookies()
-    const theme = cookieStore.get('authjs.session-token')
 
-    if (!theme) {
-        return Response.json({ message: "Not authenticated" }, { status: 401 })
-    }
-
-    const sessionId = await sessioncheck(theme.value)
-    if (!sessionId?.userId) {
-        return Response.json({ message: "Not authenticated" }, { status: 401 })
-    }
-    const myself = await prisma.user.findFirst({
-        where: {
-            id: sessionId.userId
-        },
-        select: {
-            id: true
-        }
+export async function GET(request: NextRequest,{ params, }:  { params: Promise<{ userid: string }> }) {
+    const session = await auth()
+    if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+    
+        console.log("this is koredesu " + (await params).userid)
+    const todoPosession = await prisma.user.findUnique({
+            where: {
+                id: (await params).userid.toString()
+            }
     })
-    return NextResponse.json(myself);
-}
-
-async function sessioncheck(sessiontoken:string) {
-    return await prisma.session.findFirst({
-        where: {
-            sessionToken: sessiontoken
-        },
-        select: {
-            userId: true
-        }
-    })
+    console.log("todoPosession", todoPosession);
+    if (!todoPosession) return NextResponse.json({ message: "Not found" }, { status: 404 })
+    return NextResponse.json(todoPosession);
 }

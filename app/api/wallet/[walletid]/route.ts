@@ -66,7 +66,8 @@ export async function GET(request: NextRequest,{ params, }:  { params: Promise<{
             },
             orderBy: {
                 paymentDate: 'asc'
-            }
+            },
+            take: 5,
     })
     return NextResponse.json(todoPosession);
 }

@@ -8,7 +8,7 @@ export default function Home() {
       <main className='flex flex-col h-screen p-2'>
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-2">
-          <h1 className="text-3xl font-bold">ITSUMO v.0</h1>
+          <h1 className="text-3xl font-bold">ITSUMO</h1>
         </div>
         <div className="col-span-3"  ><UserButton /></div>
       </div>

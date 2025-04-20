@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "flowbite-react/plugin/tailwindcss";
+@source "../.flowbite-react/class-list.json";
 @import "flowbite/src/themes/default";
 @plugin "flowbite/plugin";
 
@@ -28,3 +30,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bgContrast: #f9f9f9;
+}
+
+/*and was hopping for this to do the job but i tried many others */
+@theme dark: {
+  --color-bgContrast: #66C8B6;
+}
