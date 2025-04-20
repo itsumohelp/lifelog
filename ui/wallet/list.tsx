@@ -168,7 +168,7 @@ export default function Page() {
           journalUpdate={journalUpdate}
         />
       </div>
-      <div className="mt-auto">
+      <div className="absolute bottom-0 w-full pb-2">
         <OutcomeForm
           wallet={walletData}
           setWallet={balanceUpdate}
