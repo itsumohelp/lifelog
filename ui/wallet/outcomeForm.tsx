@@ -53,8 +53,8 @@ export function OutcomeForm(props: { wallet: Wallet; setWallet: any; journalUpda
                </td>
           </tr>
           <tr>
-            <td width="100"><DatePicker locale={ja} selected={startDate} onChange={(date) => setStartDate(date ?? new Date())} /></td>
-            <td className="pt-2 pr-2">
+            <td width="30"><DatePicker locale={ja} selected={startDate} onChange={(date) => setStartDate(date ?? new Date())} /></td>
+            <td className="pt-2 pr-2 pb-3">
             <label htmlFor="labels-range-input" className="sr-only">Labels range</label>
               <input id="labels-range-input" type="range" name="amount" min="100" max="10000" className="w-full ml-5 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
             </td>
