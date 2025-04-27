@@ -35,13 +35,16 @@ export default function Page() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(`/api/wallet`);
-      const resData = await response.json();
-      setWalletData(resData);
-      setLoading(false);
+      const response = await fetch(`/api/wallet`)
+      if (!response.ok) {
+        throw new Error(`HTTPエラー: ${response.status}`);
+      }
+      const responseBody = await response.json();
+      setWalletData(responseBody)
+      journalUpdate(responseBody.id)
+      setLoading(false)
     };
     fetchData();
-    journalUpdate();
   }, []);
 
   const balanceUpdate = (amount: number) => {
@@ -53,8 +56,11 @@ export default function Page() {
     });
   };
 
-  const journalUpdate = async () => {
-    const response = await fetch(`/api/wallet/${walletData?.id}`);
+  const journalUpdate = async (walletId:string) => {
+    let reciveWalletId = walletData?.id
+    if(!reciveWalletId) reciveWalletId = walletId
+
+    const response = await fetch(`/api/wallet/${reciveWalletId}`);
     const resData = await response.json();
     if (response.ok && resData) {
       resData.forEach((item: Come) => {
