@@ -48,9 +48,19 @@ export async function GET(request: NextRequest,{ params, }:  { params: Promise<{
     const session = await auth()
     if (!session?.user) return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
     
-    const todoPosession = await prisma.come.findMany({
+    const paramWalletid:string = (await params).walletid
+
+    const comeCount = await prisma.come.count({
+        where: {
+            walletId: paramWalletid
+        }
+    })
+
+    if (comeCount < 5)  return NextResponse.json({ message: "No data found" }, { status: 404 })
+    const comePos = comeCount - 5
+    const comeData = await prisma.come.findMany({
             where: {
-                walletId: (await params).walletid,
+                walletId: paramWalletid
             },
             select: {
                 id: true,
@@ -65,9 +75,10 @@ export async function GET(request: NextRequest,{ params, }:  { params: Promise<{
                 }
             },
             orderBy: {
-                createdAt: 'desc'
+                createdAt: 'asc'
             },
-            take: 1,
+            skip: comePos,
+            take: 5,
     })
-    return NextResponse.json(todoPosession);
+    return NextResponse.json(comeData);
 }

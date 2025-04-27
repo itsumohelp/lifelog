@@ -44,21 +44,23 @@ export function OutcomeForm(props: { wallet: Wallet; setWallet: any; journalUpda
   
   return (
     <form onSubmit={onSubmit}>
-      <div className="sticky bottom-0">
+      <div className="sticky bottom-0 p-3">
         <table width="100%">
           <tbody>
           <tr>
-            <td colSpan={3}>
-                <b>金額：{amount}</b>
+            <td colSpan={3} className="text-center">
+            <input id="labels-range-input" type="range" name="amount" min="100" max="10000" step="100" className="w-full bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
                </td>
           </tr>
           <tr>
-            <td width="30"><DatePicker locale={ja} selected={startDate} onChange={(date) => setStartDate(date ?? new Date())} /></td>
-            <td className="pt-2 pr-2 pb-3">
-            <label htmlFor="labels-range-input" className="sr-only">Labels range</label>
-              <input id="labels-range-input" type="range" name="amount" min="100" max="10000" className="w-full ml-5 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
-            </td>
-          <td width="110" className='text-center'><button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button></td>
+            <td>
+              <DatePicker locale={ja} selected={startDate} onChange={(date) => setStartDate(date ?? new Date())} />
+                </td>
+                <td>
+              <b>金額：{amount}</b>
+              </td>
+              <td className='text-right'>
+              <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button></td>
         </tr>
       </tbody>
       </table>
