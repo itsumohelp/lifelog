@@ -41,8 +41,6 @@ export function WalletModal(props: { showModal: any, walletId:string }) {
     fetchData()
   }, []);
 
-
-
   const inputChange = async (e: any ) => {
     const inputValue = e.target.value;
     const targetArea = searchRes.current as HTMLDivElement | null;
@@ -54,14 +52,12 @@ export function WalletModal(props: { showModal: any, walletId:string }) {
       const resData = await response.json();
       if (response.ok && resData) {
         setShareUserData(resData);
-        console.log("userData", resData);
         if (targetArea) {
           targetArea.style.position = "absolute";
           targetArea.style.left = checkelement.getBoundingClientRect().left + "px";
           targetArea.style.top = checkelement.getBoundingClientRect().top + 60 + "px";
           targetArea.style.zIndex = "1000";
           targetArea.style.display = "block";
-          //cm8olbnq60000m54e79929rcg
         }
       };
 
