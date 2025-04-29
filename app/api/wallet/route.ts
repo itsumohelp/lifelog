@@ -11,6 +11,7 @@ interface Come {
   balance: number;
   last7balance: number;
   last30balance: number;
+  loginUserId: string;
 }
 
 export async function GET() {
@@ -59,6 +60,7 @@ export async function GET() {
     balance: walletList?.balance ?? 0,
     last7balance: last7Balance[0]?._sum.amount ?? 0,
     last30balance: last30Balance[0]?._sum.amount ?? 0,
+    loginUserId: session.user.id ?? "",
   };
   return NextResponse.json(Wallet);
 }
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
   const session = await auth()
   if (!session?.user) return NextResponse.json(null, {status: 401})
 
-  await prisma.wallet.create({
+  const walletregist = await prisma.wallet.create({
     data: {
       id: randomUUID(),
       name: receiveData.name,
@@ -76,5 +78,13 @@ export async function POST(request: Request) {
       balance: 0,
     }
   })
-  return NextResponse.json(receiveData);
+
+  await prisma.walletshare.create({
+    data: {
+      id: randomUUID(),
+      walletId: walletregist.id,
+      userId: session.user.id ?? "",
+    }
+  })
+  return NextResponse.json(walletregist);
 }

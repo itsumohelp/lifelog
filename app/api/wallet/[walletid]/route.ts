@@ -11,6 +11,7 @@ interface Come {
   balance: number;
   last7balance: number;
   last30balance: number;
+  loginUserId: string
 }
 
 export async function POST(request: NextRequest, {params, }: {params: Promise<{walletid: string}>}) {
@@ -102,6 +103,7 @@ export async function GET(request: NextRequest, {params, }: {params: Promise<{wa
     balance: walletList?.balance ?? 0,
     last7balance: last7Balance[0]?._sum.amount ?? 0,
     last30balance: last30Balance[0]?._sum.amount ?? 0,
+    loginUserId: session.user.id ?? "",
   };
   return NextResponse.json(Wallet);
 
