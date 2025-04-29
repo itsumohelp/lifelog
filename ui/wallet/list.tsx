@@ -8,6 +8,8 @@ import {InstanceOptions, ModalInterface, ModalOptions} from "flowbite";
 import {WalletModal} from "@/ui/wallet/modal";
 import {Modal} from "flowbite";
 import {SelectWalletModal} from "./selectWalletModal";
+import {auth} from "@/auth";
+import {RegistWalletModal} from "./registWalletModal";
 
 export default function Page() {
     interface Wallet {
@@ -16,6 +18,7 @@ export default function Page() {
         balance: number;
         last7balance: number;
         last30balance: number;
+        loginUserId: string;
     }
 
     interface Come {
@@ -49,6 +52,7 @@ export default function Page() {
     const [shareData, setShareData] = useState<WalletRegist | null>(null);
     const [comeData, setComeData] = useState<Come[] | null>(null);
     const [isLoading, setLoading] = useState(true);
+    const [loginUserId, setLoginUserId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData(null);
@@ -62,7 +66,6 @@ export default function Page() {
             throw new Error(`HTTPエラー: ${response.status}`);
         }
         const responseBody = await response.json();
-        console.log(responseBody)
         setWalletData(responseBody);
         journalUpdate(responseBody.id);
         getShareWalletuser(responseBody.id);
@@ -203,7 +206,37 @@ export default function Page() {
             modal.hide();
         }
     };
+    const showRegistWalletModal = async (state: string) => {
+        const modalOptions: ModalOptions = {
+            placement: "center",
+            backdrop: "dynamic",
+            backdropClasses: "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40",
+            closable: true,
+            onHide: () => {
 
+            },
+            onShow: () => {
+            },
+            onToggle: () => {
+            },
+        };
+
+        const instanceOptions: InstanceOptions = {
+            id: "registWalletModal",
+            override: true,
+        };
+        const modal: ModalInterface = new Modal(
+            document.querySelector("#registWalletModal") as HTMLElement,
+            modalOptions,
+            instanceOptions,
+        );
+
+        if (state === "show") {
+            modal.show();
+        } else {
+            modal.hide();
+        }
+    };
     return (
         <>
             <div>
@@ -220,8 +253,9 @@ export default function Page() {
                                     className="w-10 h-10 rounded-full float-left"
                                 />
                             ))}
-                            <button onClick={() => showModal("show")}>ユーザー一覧</button>　　<button onClick={() => showShareWalletModal("show")}>ウォレット一覧</button>
-
+                            <button onClick={() => showModal("show")}>ユーザー一覧</button>
+                            <button onClick={() => showShareWalletModal("show")}>ウォレット一覧</button>
+                            <button onClick={() => showRegistWalletModal("show")}>ウォレット登録</button>
                         </p><br className="clear-both" />
                     </div>
                 </div>
@@ -231,14 +265,14 @@ export default function Page() {
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th scope="col" className="px-6 py-3">
+                                <th style={{width: "33%"}} scope="col" className="px-6 py-3">
                                     ALL TIME
                                 </th>
-                                <th scope="col" className="px-6 py-3">
-                                    LAST 7 DAY
+                                <th style={{width: "33%"}} scope="col" className="px-6 py-3">
+                                    LAST 7 DAYS
                                 </th>
                                 <th scope="col" className="px-6 py-3">
-                                    LAST 30 DAY
+                                    LAST 30 DAYS
                                 </th>
                             </tr>
                         </thead>
@@ -247,10 +281,10 @@ export default function Page() {
                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {walletData.balance}
                                 </th>
-                                <td className="px-6 py-4">
+                                <td style={{width: "33%"}} className="px-6 py-4">
                                     {walletData.last7balance}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td style={{width: "33%"}} className="px-6 py-4">
                                     {walletData.last30balance}
                                 </td>
                             </tr>
@@ -260,6 +294,7 @@ export default function Page() {
 
                 <WalletModal showModal={showModal} walletId={walletData.id} />
                 <SelectWalletModal showShareWalletModal={showShareWalletModal} fetchData={fetchData} />
+                <RegistWalletModal showRegistWalletModal={showRegistWalletModal} fetchData={fetchData} loginUserId={walletData.loginUserId} />
 
                 <Journal
                     wallet={walletData}
