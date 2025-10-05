@@ -1,8 +1,5 @@
 import type {Metadata} from "next";
-import {ThemeModeScript} from 'flowbite-react';
 import {GoogleAnalytics} from '@next/third-parties/google'
-
-import "./globals.css";
 
 export const metadata: Metadata = {
     title: "ITSUMO"
@@ -16,7 +13,6 @@ export default function RootLayout({
     return (
         <html lang="ja">
             <head>
-                <ThemeModeScript />
                 <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W114GLVB9"></script>
                 <GoogleAnalytics gaId="G-3W114GLVB9" />

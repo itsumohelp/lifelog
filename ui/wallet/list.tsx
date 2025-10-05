@@ -4,12 +4,6 @@ import {Form} from "@/ui/wallet/form";
 import {OutcomeForm} from "@/ui/wallet/outcomeForm";
 import Journal from "./journal";
 import React from "react";
-import {InstanceOptions, ModalInterface, ModalOptions} from "flowbite";
-import {WalletModal} from "@/ui/wallet/modal";
-import {Modal} from "flowbite";
-import {SelectWalletModal} from "./selectWalletModal";
-import {auth} from "@/auth";
-import {RegistWalletModal} from "./registWalletModal";
 
 export default function Page() {
     interface Wallet {
@@ -143,100 +137,7 @@ export default function Page() {
             </div>
         );
 
-    const showModal = async (state: string) => {
-        const modalOptions: ModalOptions = {
-            placement: "center",
-            backdrop: "dynamic",
-            backdropClasses: "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40",
-            closable: true,
-            onHide: () => {
 
-            },
-            onShow: () => {
-            },
-            onToggle: () => {
-            },
-        };
-
-        const instanceOptions: InstanceOptions = {
-            id: "modalEl",
-            override: true,
-        };
-        const modal: ModalInterface = new Modal(
-            document.querySelector("#modalEl") as HTMLElement,
-            modalOptions,
-            instanceOptions,
-        );
-
-        if (state === "show") {
-            modal.show();
-        } else {
-            modal.hide();
-        }
-    };
-
-    const showShareWalletModal = async (state: string) => {
-        const modalOptions: ModalOptions = {
-            placement: "center",
-            backdrop: "dynamic",
-            backdropClasses: "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40",
-            closable: true,
-            onHide: () => {
-
-            },
-            onShow: () => {
-            },
-            onToggle: () => {
-            },
-        };
-
-        const instanceOptions: InstanceOptions = {
-            id: "selectWalletModal",
-            override: true,
-        };
-        const modal: ModalInterface = new Modal(
-            document.querySelector("#selectWalletModal") as HTMLElement,
-            modalOptions,
-            instanceOptions,
-        );
-
-        if (state === "show") {
-            modal.show();
-        } else {
-            modal.hide();
-        }
-    };
-    const showRegistWalletModal = async (state: string) => {
-        const modalOptions: ModalOptions = {
-            placement: "center",
-            backdrop: "dynamic",
-            backdropClasses: "bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40",
-            closable: true,
-            onHide: () => {
-
-            },
-            onShow: () => {
-            },
-            onToggle: () => {
-            },
-        };
-
-        const instanceOptions: InstanceOptions = {
-            id: "registWalletModal",
-            override: true,
-        };
-        const modal: ModalInterface = new Modal(
-            document.querySelector("#registWalletModal") as HTMLElement,
-            modalOptions,
-            instanceOptions,
-        );
-
-        if (state === "show") {
-            modal.show();
-        } else {
-            modal.hide();
-        }
-    };
     return (
         <>
             <div>
@@ -253,9 +154,6 @@ export default function Page() {
                                     className="w-10 h-10 rounded-full float-left"
                                 />
                             ))}
-                            <button onClick={() => showModal("show")}>ユーザー一覧</button>
-                            <button onClick={() => showShareWalletModal("show")}>ウォレット一覧</button>
-                            <button onClick={() => showRegistWalletModal("show")}>ウォレット登録</button>
                         </p><br className="clear-both" />
                     </div>
                 </div>
@@ -291,10 +189,6 @@ export default function Page() {
                         </tbody>
                     </table>
                 </div>
-
-                <WalletModal showModal={showModal} walletId={walletData.id} />
-                <SelectWalletModal showShareWalletModal={showShareWalletModal} fetchData={fetchData} />
-                <RegistWalletModal showRegistWalletModal={showRegistWalletModal} fetchData={fetchData} loginUserId={walletData.loginUserId} />
 
                 <Journal
                     wallet={walletData}

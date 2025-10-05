@@ -1,5 +1,5 @@
 "use client";
-import {FormEvent, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 
 interface ShareWalletList {
     id: string;
