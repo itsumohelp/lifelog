@@ -1,7 +1,6 @@
 'use client';
 import {FormEvent, useState} from 'react'
 import DatePicker, {registerLocale} from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
 import {ja} from 'date-fns/locale/ja';
 registerLocale('es', ja)
 
