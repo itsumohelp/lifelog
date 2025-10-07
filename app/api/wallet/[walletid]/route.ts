@@ -9,6 +9,8 @@ interface Come {
   id: string;
   name: string;
   balance: number;
+  categoryId: number;
+  inout: number;
   last7balance: number;
   last30balance: number;
   loginUserId: string
@@ -24,6 +26,8 @@ export async function POST(request: NextRequest, {params, }: {params: Promise<{w
       data: {
         id: randomUUID(),
         amount: Number(receiveData.amount),
+        categoryId: Number(receiveData.category),
+        inout: Number(receiveData.inout),
         userId: session.user.id ?? "",
         walletId: (await params).walletid,
         paymentDate: new Date(receiveData.paymentDate)
@@ -101,6 +105,8 @@ export async function GET(request: NextRequest, {params, }: {params: Promise<{wa
     id: walletList?.id ?? "",
     name: walletList?.name ?? "",
     balance: walletList?.balance ?? 0,
+    categoryId: 0,
+    inout: 0,
     last7balance: last7Balance[0]?._sum.amount ?? 0,
     last30balance: last30Balance[0]?._sum.amount ?? 0,
     loginUserId: session.user.id ?? "",

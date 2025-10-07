@@ -9,6 +9,8 @@ interface Wallet {
 interface Come {
     id: string;
     amount: number;
+    categoryId: number;
+    inout: number;
     paymentDate: string;
     createdAt: string;
     user: {
@@ -53,10 +55,28 @@ export default function Journal(props: {wallet: Wallet; come: Come[]; setWallet:
                             <tbody><tr><td width='36' className="align-top" valign="top">
                                 <img className="w-8 h-8 rounded-full" src={item.user.image} alt="Jese image" />
                             </td><td>
-                                    <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-2 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
-                                        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                                            <span className="text-sm font-semibold text-gray-900">{item.user.name}</span>
-                                            <span className="text-sm font-normal text-gray-500">{item.paymentDate}</span>
+                                    <p className="font-normal text-gray-900 text-sm">{item.user.name}</p>
+                                    <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-1 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
+                                        <div className="flex items-center rtl:space-x-reverse">
+                                            {item.inout === 1 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-red-200 inline-block text-center font-bold'>収入</div>
+                                            )}
+                                            {item.inout === 2 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-green-200 inline-block text-center font-bold'>支出</div>
+                                            )}
+                                            {item.categoryId == 1 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>食費</div>
+                                            )}
+                                            {item.categoryId === 2 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>雑貨</div>
+                                            )}
+                                            {item.categoryId === 3 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>交際費</div>
+                                            )}
+                                            {item.categoryId === 4 && (
+                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>その他</div>
+                                            )}
+                                            <span className="text-sm text-gray-500">{item.paymentDate}</span>
                                         </div>
                                         <p className="font-normal text-gray-900 text-4xl">{item.amount}</p>
                                     </div>

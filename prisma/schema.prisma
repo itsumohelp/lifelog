@@ -109,15 +109,25 @@ model walletshare {
   updatedAt DateTime @updatedAt
 }
 
+model category {
+  id            Int @unique
+  categoryName  String
+  come          come[]
+}
+
 
 model come {
   id            String @unique
   amount        Int
   userId        String
   walletId      String
+  inout         Int @default(0)
+  categoryId    Int @default(0)
+  category category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   paymentDate   DateTime @default(now())
   user user @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallet wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+

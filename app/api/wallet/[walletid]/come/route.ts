@@ -24,6 +24,8 @@ export async function GET(request: NextRequest, {params, }: {params: Promise<{wa
       select: {
         id: true,
         amount: true,
+        categoryId: true,
+        inout: true,
         paymentDate: true,
         userId: true,
         user: {
@@ -48,6 +50,8 @@ export async function GET(request: NextRequest, {params, }: {params: Promise<{wa
     select: {
       id: true,
       amount: true,
+      categoryId: true,
+      inout: true,
       paymentDate: true,
       userId: true,
       user: {
