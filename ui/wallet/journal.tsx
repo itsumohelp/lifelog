@@ -55,10 +55,10 @@ export default function Journal(props: {wallet: Wallet; come: Come[]; setWallet:
                             </td><td>
                                     <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-2 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
                                         <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">{item.user.name}</span>
-                                            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{item.paymentDate}</span>
+                                            <span className="text-sm font-semibold text-gray-900">{item.user.name}</span>
+                                            <span className="text-sm font-normal text-gray-500">{item.paymentDate}</span>
                                         </div>
-                                        <p className="font-normal text-gray-900 dark:text-white text-4xl">{item.amount}</p>
+                                        <p className="font-normal text-gray-900 text-4xl">{item.amount}</p>
                                     </div>
                                 </td><td width='40'>
                                     <a onClick={() => deleteRow(item.id, item.amount)}>
