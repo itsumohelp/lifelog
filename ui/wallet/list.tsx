@@ -139,27 +139,23 @@ export default function Page() {
 
 
     return (
-        <>
+        <div className='flex flex-col h-screen w-screen'>
             <div>
-                <div className="max-w-mm rounded overflow-hidden shadow-lg">
-                    <div className="pt-3 pl-3">
+                <div className="max-w-mm rounded shadow-lg">
+                    <div className='pt-1 pl-2'>
                         <div className="font-bold text-xl mb-1">
                             {walletData.name || "No Title Available"}
                         </div>
-                        <p className="">
-                            {shareData?.walletshare.map((user, index) => (
-                                <img key={index}
-                                    src={user.user.image}
-                                    alt={user.user.name}
-                                    className="w-10 h-10 rounded-full float-left"
-                                />
-                            ))}
-                        </p><br className="clear-both" />
+                        {shareData?.walletshare.map((user, index) => (
+                            <img key={index}
+                                src={user.user.image}
+                                alt={user.user.name}
+                                className="w-10 h-10 rounded-full float-left"
+                            />
+                        ))}
                     </div>
                 </div>
-
-
-                <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+                <div className="shadow-md sm:rounded-lg">
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
@@ -190,7 +186,16 @@ export default function Page() {
                     </table>
                 </div>
             </div>
-            <div className="absolute bottom-0 w-full">
+            <div className='flex-1'>
+                <Journal
+                    wallet={walletData}
+                    come={comeData}
+                    setWallet={balanceUpdate}
+                    journalUpdate={journalUpdate}
+                />
+                aaaaa
+            </div>
+            <div className='fixed bottom-0 left-0 right-0'>
                 <OutcomeForm
                     wallet={walletData}
                     setWallet={balanceUpdate}
@@ -198,6 +203,6 @@ export default function Page() {
                     ShareUserData={shareData}
                 />
             </div>
-        </>
+        </div >
     );
 }
