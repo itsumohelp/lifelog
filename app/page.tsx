@@ -1,7 +1,7 @@
 import UserButton from "@/components/user-button";
 import WalletList from "@/ui/wallet/list";
 import {SessionProvider} from "next-auth/react";
-import LogoPage from "./logo";
+import LogoPage from "@/app/logo";
 
 export default function Home() {
     return (
