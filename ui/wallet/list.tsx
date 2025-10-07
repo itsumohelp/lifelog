@@ -141,10 +141,8 @@ export default function Page() {
         <div className='flex flex-col h-screen w-screen'>
             <div>
                 <div className="max-w-mm rounded ">
-                    <div className='pt-1 pl-2'>
-                        <div className="font-bold text-xl mb-1">
-                            {walletData.name || "No Title Available"}
-                        </div>
+                    <div className='mt-2 mx-2'>
+                        <p className='font-bold'>{walletData.name || "No Title Available"}</p>
                         {shareData?.walletshare.map((user, index) => (
                             <img key={index}
                                 src={user.user.image}
@@ -155,7 +153,7 @@ export default function Page() {
                     </div>
                 </div>
                 <div>
-                    <table className="text-left mt-2 ml-2">
+                    <table className="w-full mt-2 ml-2 text-center">
                         <tbody>
                             <tr>
                                 <td>
@@ -169,13 +167,13 @@ export default function Page() {
                                 </td>
                             </tr>
                             <tr className="text-3xl">
-                                <td style={{width: "20%"}} scope="row" className="px-1 py-1">
+                                <td style={{width: "33%"}} scope="row" className="px-1 py-1">
                                     {walletData.balance}
                                 </td>
-                                <td style={{width: "20%"}} className="px-1 py-1">
+                                <td style={{width: "33%"}} className="px-1 py-1">
                                     {walletData.last7balance}
                                 </td>
-                                <td style={{width: "20%"}} className="px-1 py-1">
+                                <td style={{width: "33%"}} className="px-1 py-1">
                                     {walletData.last30balance}
                                 </td>
                             </tr>
