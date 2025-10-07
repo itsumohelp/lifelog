@@ -18,6 +18,8 @@ export default function Page() {
     interface Come {
         id: string;
         amount: number;
+        categoryId: number;
+        inout: number;
         createdAt: string;
         paymentDate: string;
         user: {

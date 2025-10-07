@@ -13,6 +13,8 @@ interface Wallet {
 interface Come {
     amount: number;
     paymentDate: string;
+    category: number;
+    inout: number;
 }
 
 interface ShareUserData {
@@ -26,12 +28,16 @@ interface ShareUserData {
 export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdate: any; ShareUserData: {walletshare: {user: {id: string, name: string, image: string}}[]} | null}) {
 
     let [amount, setAmount] = useState(0);
+    let [category, setCategory] = useState(0);
+    let [inout, setInout] = useState(0);
     const [startDate, setStartDate] = useState(new Date());
     async function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         let data: Come = {
             amount: Number(amount),
             paymentDate: startDate.toISOString(),
+            category: Number(category),
+            inout: Number(inout),
         }
         await fetch(`/api/wallet/${props.wallet.id}`, {
             method: 'POST',
@@ -67,15 +73,18 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
     const income = useRef<HTMLInputElement>(null);
     const outcome = useRef<HTMLInputElement>(null);
 
+
     const changeinout = (changeKind: string) => {
         if (changeKind === "in" && income.current && outcome.current) {
-            income.current.style.backgroundColor = "rgb(134 239 172)";
+            income.current.style.backgroundColor = "red";
             income.current.style.fontWeight = "bold";
+            setInout(1)
             outcome.current.style.backgroundColor = "rgb(229 231 235)";
             outcome.current.style.fontWeight = "normal";
         } else if (outcome.current && income.current) {
             income.current.style.backgroundColor = "rgb(229 231 235)";
             income.current.style.fontWeight = "normal";
+            setInout(2)
             outcome.current.style.backgroundColor = "rgb(134 239 172)";
             outcome.current.style.fontWeight = "bold";
 
@@ -86,21 +95,27 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
     const misc = useRef<HTMLInputElement>(null);
     const entertainment = useRef<HTMLInputElement>(null);
     const other = useRef<HTMLInputElement>(null);
+    const cateogryValue = useRef<HTMLInputElement>(null);
+
 
     const changecategory = (changeKind: string) => {
         categoryreset();
         if (changeKind === "food" && food.current) {
-            food.current.style.backgroundColor = "rgb(134 239 172)";
+            food.current.style.backgroundColor = "gold";
             food.current.style.fontWeight = "bold";
+            setCategory(1);
         } else if (changeKind === "misc" && misc.current) {
-            misc.current.style.backgroundColor = "rgb(134 239 172)";
+            misc.current.style.backgroundColor = "gold";
             misc.current.style.fontWeight = "bold";
+            setCategory(2);
         } else if (changeKind === "entertainment" && entertainment.current) {
-            entertainment.current.style.backgroundColor = "rgb(134 239 172)";
+            entertainment.current.style.backgroundColor = "gold";
             entertainment.current.style.fontWeight = "bold";
+            setCategory(3);
         } else if (changeKind === "other" && other.current) {
-            other.current.style.backgroundColor = "rgb(134 239 172)";
+            other.current.style.backgroundColor = "gold";
             other.current.style.fontWeight = "bold";
+            setCategory(4);
         }
     }
     function categoryreset() {
