@@ -1,5 +1,5 @@
 'use client';
-import {FormEvent, useState} from 'react'
+import {FormEvent, useRef, useState} from 'react'
 import DatePicker, {registerLocale} from 'react-datepicker'
 import {ja} from 'date-fns/locale/ja';
 registerLocale('es', ja)
@@ -15,7 +15,15 @@ interface Come {
     paymentDate: string;
 }
 
-export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdate: any}) {
+interface ShareUserData {
+    user: {
+        id: string;
+        name: string;
+        image: string;
+    }
+}
+
+export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdate: any; ShareUserData: {walletshare: {user: {id: string, name: string, image: string}}[]} | null}) {
 
     let [amount, setAmount] = useState(0);
     const [startDate, setStartDate] = useState(new Date());
@@ -56,6 +64,58 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
         setAmount(Number(e.target.value));
     };
 
+    const income = useRef<HTMLInputElement>(null);
+    const outcome = useRef<HTMLInputElement>(null);
+
+    const changeinout = (changeKind: string) => {
+        if (changeKind === "in" && income.current && outcome.current) {
+            income.current.style.backgroundColor = "rgb(134 239 172)";
+            income.current.style.fontWeight = "bold";
+            outcome.current.style.backgroundColor = "rgb(229 231 235)";
+            outcome.current.style.fontWeight = "normal";
+        } else if (outcome.current && income.current) {
+            income.current.style.backgroundColor = "rgb(229 231 235)";
+            income.current.style.fontWeight = "normal";
+            outcome.current.style.backgroundColor = "rgb(134 239 172)";
+            outcome.current.style.fontWeight = "bold";
+
+        }
+    }
+
+    const food = useRef<HTMLInputElement>(null);
+    const misc = useRef<HTMLInputElement>(null);
+    const entertainment = useRef<HTMLInputElement>(null);
+    const other = useRef<HTMLInputElement>(null);
+
+    const changecategory = (changeKind: string) => {
+        categoryreset();
+        if (changeKind === "food" && food.current) {
+            food.current.style.backgroundColor = "rgb(134 239 172)";
+            food.current.style.fontWeight = "bold";
+        } else if (changeKind === "misc" && misc.current) {
+            misc.current.style.backgroundColor = "rgb(134 239 172)";
+            misc.current.style.fontWeight = "bold";
+        } else if (changeKind === "entertainment" && entertainment.current) {
+            entertainment.current.style.backgroundColor = "rgb(134 239 172)";
+            entertainment.current.style.fontWeight = "bold";
+        } else if (changeKind === "other" && other.current) {
+            other.current.style.backgroundColor = "rgb(134 239 172)";
+            other.current.style.fontWeight = "bold";
+        }
+    }
+    function categoryreset() {
+        if (food.current && misc.current && entertainment.current && other.current) {
+            food.current.style.backgroundColor = "rgb(229 231 235)";
+            food.current.style.fontWeight = "normal";
+            misc.current.style.backgroundColor = "rgb(229 231 235)";
+            misc.current.style.fontWeight = "normal";
+            entertainment.current.style.backgroundColor = "rgb(229 231 235)";
+            entertainment.current.style.fontWeight = "normal";
+            other.current.style.backgroundColor = "rgb(229 231 235)";
+            other.current.style.fontWeight = "normal";
+        }
+    }
+
     return (
         <form onSubmit={onSubmit} name="rangeForm">
 
@@ -77,42 +137,70 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
 
 
             <div className="className= m-2 p-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                <div className="mb-2 text-5xl text-center font-bold tracking-tight text-gray-900 dark:text-white">
-
-                    <button onClick={() => chageAmount(-100)} type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <svg className="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-                        </svg>
-                    </button>
-
-                    {amount}
-                    <button onClick={() => chageAmount(100)} type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <svg className="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-                        </svg>
-                    </button>
-                </div>
-
+                <table width='100%'><tbody><tr>
+                    <td width='10' className='pr-5'>
+                        <div className='w-16 p-1 mb-2 rounded-full bg-gray-200 inline-block text-center' onClick={() => changeinout("in")} ref={income}>収入</div><br />
+                        <div className='w-16 p-1 rounded-full bg-green-300 font-bold inline-block text-center' onClick={() => changeinout("out")} ref={outcome}>支出</div>
+                    </td>
+                    <td>
+                        <div className="text-5xl text-center font-bold tracking-tight text-gray-900 dark:text-white">
+                            {amount}
+                        </div>
+                    </td><td width='10' className='pr-5'>
+                        円
+                    </td></tr></tbody></table>
                 <table width="100%">
                     <tbody>
                         <tr>
-                            <td colSpan={3} className="text-center">
-                                <input id="labels-range-input" type="range" name="amount" min="100" max="10000" step="100" className="w-full bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
+                            <td colSpan={2} className="text-center">
+                                <div className='pt-8 pr-5 pl-5'>
+                                    <input id="labels-range-input" type="range" name="amount" min="100" max="10000" step="100" className="w-full bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" defaultValue={amount} onChange={changelineLength} />
+                                </div>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                <DatePicker locale={ja} selected={startDate} onChange={(date) => setStartDate(date ?? new Date())} />
+                                <div className='p-5'>
+                                    <table width="100%" className="border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th className="">登録者</th>
+                                                <th className="">カテゴリ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td width='60'>
+                                                    {props.ShareUserData?.walletshare.map((user, index) => (
+                                                        <img key={index}
+                                                            src={user.user.image}
+                                                            alt={user.user.name}
+                                                            className="w-10 h-10 rounded-full"
+                                                        />
+                                                    ))}
+                                                </td>
+                                                <td>
+                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("food")} ref={food}>食費</div>
+                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("misc")} ref={misc}>雑貨</div>
+                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("entertainment")} ref={entertainment}>交際費</div>
+                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("other")} ref={other}>その他</div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </div>
                             </td>
-                            <td>
+                            <td width='100' className='text-right'>
+                                <div className='p-5'>
+                                    <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button>
+                                </div>
                             </td>
-                            <td className='text-right'>
-                                <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">登録</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-        </form>
+        </form >
     )
 }
