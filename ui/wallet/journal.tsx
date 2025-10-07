@@ -50,7 +50,7 @@ export default function Journal(props: {wallet: Wallet; come: Come[]; setWallet:
                 {props.come.map((item: Come, index) => (
                     <div className="m-1 pt-1 pb-1 flex items-start gap-2.5" key={index}>
                         <table width='100%'>
-                            <tbody><tr><td width='40' className="valign-top">
+                            <tbody><tr><td width='36' className="align-top" valign="top">
                                 <img className="w-8 h-8 rounded-full" src={item.user.image} alt="Jese image" />
                             </td><td>
                                     <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-2 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
