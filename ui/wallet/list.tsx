@@ -153,7 +153,7 @@ export default function Page() {
                     </div>
                 </div>
                 <div>
-                    <table className="w-full mt-2 ml-2 text-center">
+                    <table className="w-full mt-2 ml-2 text-left">
                         <tbody>
                             <tr>
                                 <td>
