@@ -153,7 +153,7 @@ export default function Page() {
                     </div>
                 </div>
                 <div>
-                    <table className="w-full mt-2 ml-2 text-left">
+                    <table className="w-full mt-2 text-left">
                         <tbody>
                             <tr>
                                 <td>
@@ -167,13 +167,13 @@ export default function Page() {
                                 </td>
                             </tr>
                             <tr className="text-3xl">
-                                <td style={{width: "33%"}} scope="row" className="px-1 py-1">
+                                <td style={{width: "30%"}} scope="row" className="px-1 py-1">
                                     {walletData.balance}
                                 </td>
-                                <td style={{width: "33%"}} className="px-1 py-1">
+                                <td style={{width: "30%"}} className="px-1 py-1">
                                     {walletData.last7balance}
                                 </td>
-                                <td style={{width: "33%"}} className="px-1 py-1">
+                                <td style={{width: "30%"}} className="px-1 py-1">
                                     {walletData.last30balance}
                                 </td>
                             </tr>

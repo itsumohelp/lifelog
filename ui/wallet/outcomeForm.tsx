@@ -119,7 +119,7 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
     return (
         <form onSubmit={onSubmit} name="rangeForm">
 
-            <div id="toast-success" className="hidden items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
+            <div id="toast-success" className="hidden items-center w-full max-w-xs pl-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm" role="alert">
                 <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
                     <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
@@ -136,7 +136,8 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
             </div>
 
 
-            <div className="className= m-2 p-2 bg-white border border-gray-200 rounded-lg">
+            <hr></hr>
+            <div className="m-2 p-2">
                 <table width='100%'><tbody><tr>
                     <td width='10' className='pr-5'>
                         <div className='w-16 p-1 mb-2 rounded-full bg-gray-200 inline-block text-center' onClick={() => changeinout("in")} ref={income}>収入</div><br />
@@ -152,43 +153,32 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
                 <table width="100%">
                     <tbody>
                         <tr>
-                            <td colSpan={2} className="text-center">
-                                <div className='pt-8 pr-5 pl-5'>
+                            <td width='50' valign='bottom' align='center'>
+                                {props.ShareUserData?.walletshare.map((user, index) => (
+                                    <img key={index}
+                                        src={user.user.image}
+                                        alt={user.user.name}
+                                        className="w-10 h-10 rounded-full"
+                                    />
+                                ))}
+                            </td>
+                            <td className="text-center">
+                                <div className='pt-8 pr-5 pl-3'>
                                     <input id="labels-range-input" type="range" name="amount" min="100" max="10000" step="100" className="w-full bg-gray-200 rounded-lg appearance-none cursor-pointer" defaultValue={amount} onChange={changelineLength} />
                                 </div>
                             </td>
                         </tr>
+                    </tbody>
+                </table>
+                <table width="100%">
+                    <tbody>
                         <tr>
                             <td>
-                                <div className='p-5'>
-                                    <table width="100%" className="border-collapse">
-                                        <thead>
-                                            <tr>
-                                                <th className="">登録者</th>
-                                                <th className="">カテゴリ</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td width='60'>
-                                                    {props.ShareUserData?.walletshare.map((user, index) => (
-                                                        <img key={index}
-                                                            src={user.user.image}
-                                                            alt={user.user.name}
-                                                            className="w-10 h-10 rounded-full"
-                                                        />
-                                                    ))}
-                                                </td>
-                                                <td>
-                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("food")} ref={food}>食費</div>
-                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("misc")} ref={misc}>雑貨</div>
-                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("entertainment")} ref={entertainment}>交際費</div>
-                                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("other")} ref={other}>その他</div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
+                                <div className='p-2'>
+                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("food")} ref={food}>食費</div>
+                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("misc")} ref={misc}>雑貨</div>
+                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("entertainment")} ref={entertainment}>交際費</div>
+                                    <div className='w-16 p-1 mr-1 rounded-full bg-gray-200 inline-block text-center' onClick={() => changecategory("other")} ref={other}>その他</div>
                                 </div>
                             </td>
                             <td width='100' className='text-right'>
