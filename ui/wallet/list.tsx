@@ -46,7 +46,6 @@ export default function Page() {
     const [shareData, setShareData] = useState<WalletRegist | null>(null);
     const [comeData, setComeData] = useState<Come[] | null>(null);
     const [isLoading, setLoading] = useState(true);
-    const [loginUserId, setLoginUserId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData(null);
@@ -141,7 +140,7 @@ export default function Page() {
     return (
         <div className='flex flex-col h-screen w-screen'>
             <div>
-                <div className="max-w-mm rounded shadow-lg">
+                <div className="max-w-mm rounded ">
                     <div className='pt-1 pl-2'>
                         <div className="font-bold text-xl mb-1">
                             {walletData.name || "No Title Available"}
@@ -155,30 +154,28 @@ export default function Page() {
                         ))}
                     </div>
                 </div>
-                <div className="shadow-md sm:rounded-lg">
-                    <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th style={{width: "33%"}} scope="col" className="px-6 py-3">
-                                    ALL TIME
-                                </th>
-                                <th style={{width: "33%"}} scope="col" className="px-6 py-3">
-                                    LAST 7 DAYS
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    LAST 30 DAYS
-                                </th>
-                            </tr>
-                        </thead>
+                <div>
+                    <table className="text-left mt-2 ml-2">
                         <tbody>
-                            <tr className="text-3xl odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <tr>
+                                <td>
+                                    ALL TIME
+                                </td>
+                                <td>
+                                    LAST 7 DAYS
+                                </td>
+                                <td>
+                                    LAST 30 DAYS
+                                </td>
+                            </tr>
+                            <tr className="text-3xl">
+                                <td style={{width: "20%"}} scope="row" className="px-1 py-1">
                                     {walletData.balance}
-                                </th>
-                                <td style={{width: "33%"}} className="px-6 py-4">
+                                </td>
+                                <td style={{width: "20%"}} className="px-1 py-1">
                                     {walletData.last7balance}
                                 </td>
-                                <td style={{width: "33%"}} className="px-6 py-4">
+                                <td style={{width: "20%"}} className="px-1 py-1">
                                     {walletData.last30balance}
                                 </td>
                             </tr>
@@ -193,7 +190,6 @@ export default function Page() {
                     setWallet={balanceUpdate}
                     journalUpdate={journalUpdate}
                 />
-                aaaaa
             </div>
             <div className='fixed bottom-0 left-0 right-0'>
                 <OutcomeForm
