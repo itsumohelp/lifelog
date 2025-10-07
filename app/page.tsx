@@ -5,7 +5,7 @@ import {SessionProvider} from "next-auth/react";
 export default function Home() {
     return (
         <div>
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-4 p-1">
                 <div className="col-span-2">
                     <h1 className="text-3xl font-bold">ITSUMO</h1>
                 </div>
