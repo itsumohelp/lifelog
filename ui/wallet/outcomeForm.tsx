@@ -200,7 +200,6 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
                     </tbody>
                 </table>
             </div>
-
         </form >
     )
 }

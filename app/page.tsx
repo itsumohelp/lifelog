@@ -4,18 +4,16 @@ import {SessionProvider} from "next-auth/react";
 
 export default function Home() {
     return (
-        <>
-            <main className='flex flex-col h-screen pt-1 pl-1 pr-1'>
-                <div className="grid grid-cols-5 gap-4">
-                    <div className="col-span-2">
-                        <h1 className="text-3xl font-bold">ITSUMO</h1>
-                    </div>
-                    <div className="col-span-3"  ><UserButton /></div>
+        <div>
+            <div className="grid grid-cols-5 gap-4">
+                <div className="col-span-2">
+                    <h1 className="text-3xl font-bold">ITSUMO</h1>
                 </div>
-                <SessionProvider>
-                    <WalletList />
-                </SessionProvider>
-            </main>
-        </>
+                <div className="col-span-3"  ><UserButton /></div>
+            </div>
+            <SessionProvider>
+                <WalletList />
+            </SessionProvider>
+        </div>
     );
 }
