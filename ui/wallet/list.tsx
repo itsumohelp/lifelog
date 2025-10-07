@@ -189,19 +189,13 @@ export default function Page() {
                         </tbody>
                     </table>
                 </div>
-
-                <Journal
-                    wallet={walletData}
-                    come={comeData}
-                    setWallet={balanceUpdate}
-                    journalUpdate={journalUpdate}
-                />
             </div>
             <div className="absolute bottom-0 w-full">
                 <OutcomeForm
                     wallet={walletData}
                     setWallet={balanceUpdate}
                     journalUpdate={journalUpdate}
+                    ShareUserData={shareData}
                 />
             </div>
         </>
