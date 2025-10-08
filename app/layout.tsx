@@ -17,7 +17,7 @@ export default function RootLayout({
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W114GLVB9"></script>
                 <GoogleAnalytics gaId="G-3W114GLVB9" />
             </head>
-            <body className="overflow-hidden">
+            <body className="">
                 {children}
             </body>
         </html>

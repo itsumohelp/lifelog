@@ -76,7 +76,7 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
 
     const changeinout = (changeKind: string) => {
         if (changeKind === "in" && income.current && outcome.current) {
-            income.current.style.backgroundColor = "red";
+            income.current.style.backgroundColor = "rgb(187 247 208)";
             income.current.style.fontWeight = "bold";
             setInout(1)
             outcome.current.style.backgroundColor = "rgb(229 231 235)";
@@ -85,7 +85,7 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
             income.current.style.backgroundColor = "rgb(229 231 235)";
             income.current.style.fontWeight = "normal";
             setInout(2)
-            outcome.current.style.backgroundColor = "rgb(134 239 172)";
+            outcome.current.style.backgroundColor = "rgb(254 202 202)";
             outcome.current.style.fontWeight = "bold";
 
         }
@@ -152,11 +152,11 @@ export function OutcomeForm(props: {wallet: Wallet; setWallet: any; journalUpdat
 
 
             <hr></hr>
-            <div className="m-2 p-2">
+            <div className="m-2 p-2 bg-white">
                 <table width='100%'><tbody><tr>
                     <td width='10' className='pr-5'>
                         <div className='w-16 p-1 mb-2 rounded-full bg-gray-200 inline-block text-center' onClick={() => changeinout("in")} ref={income}>収入</div><br />
-                        <div className='w-16 p-1 rounded-full bg-green-300 font-bold inline-block text-center' onClick={() => changeinout("out")} ref={outcome}>支出</div>
+                        <div className='w-16 p-1 rounded-full bg-red-200 font-bold inline-block text-center' onClick={() => changeinout("out")} ref={outcome}>支出</div>
                     </td>
                     <td>
                         <div className="text-5xl text-center font-bold tracking-tight text-gray-900">
