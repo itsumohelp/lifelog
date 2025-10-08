@@ -1,5 +1,5 @@
 "use client";
-import {forwardRef, useEffect, useImperativeHandle, useState} from "react";
+import {useEffect} from "react";
 
 interface Wallet {
     id: string;
@@ -47,48 +47,34 @@ export default function Journal(props: {wallet: Wallet; come: Come[]; setWallet:
         );
     }
     return (
-        <div className='overflow-y-auto p-1'>
+        <div className='p-1'>
             <div>
                 {props.come.map((item: Come, index) => (
-                    <div className="m-1 pt-1 pb-1 flex items-start gap-2.5" key={index}>
-                        <table width='100%'>
-                            <tbody><tr><td width='36' className="align-top" valign="top">
-                                <img className="w-8 h-8 rounded-full" src={item.user.image} alt="Jese image" />
-                            </td><td>
-                                    <p className="font-normal text-gray-900 text-sm">{item.user.name}</p>
-                                    <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-1 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl">
-                                        <div className="flex items-center rtl:space-x-reverse">
-                                            {item.inout === 1 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-red-200 inline-block text-center font-bold'>収入</div>
-                                            )}
-                                            {item.inout === 2 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-green-200 inline-block text-center font-bold'>支出</div>
-                                            )}
-                                            {item.categoryId == 1 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>食費</div>
-                                            )}
-                                            {item.categoryId === 2 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>雑貨</div>
-                                            )}
-                                            {item.categoryId === 3 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>交際費</div>
-                                            )}
-                                            {item.categoryId === 4 && (
-                                                <div className='w-16 p-1 text-xs rounded-full bg-yellow-200 inline-block text-center font-bold'>その他</div>
-                                            )}
-                                            <span className="text-sm text-gray-500">{item.paymentDate}</span>
-                                        </div>
-                                        <p className="font-normal text-gray-900 text-4xl">{item.amount}</p>
-                                    </div>
-                                </td><td width='40'>
-                                    <a onClick={() => deleteRow(item.id, item.amount)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 28 28" strokeWidth={1.5} stroke="currentColor" className="size-2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                        </svg>
-                                    </a>
-                                </td></tr></tbody>
-
-                        </table>
+                    <div className="m-1 pt-1 pb-1 items-start gap-2.5" key={index}>
+                        {item.inout === 1 && (
+                            <div className="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" onClick={() => deleteRow(item.id, item.amount)} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="bg-white rounded-full absolute top-5 right-0 w-8 h-8">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <img className="relative top-2 left-2 inline-block mx-1 w-9 h-9 rounded-full" src={item.user.image} alt="image" />
+                                <p className="inline-block relative top-2">{item.user.name}　<span className="text-sm text-gray-500">{item.paymentDate}</span></p>
+                                <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-1 border-green-100 bg-green-200 rounded">
+                                    <p className="font-normal text-gray-900 text-4xl">{item.amount}</p>
+                                </div>
+                            </div>
+                        )}
+                        {item.inout === 2 && (
+                            <div className="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" onClick={() => deleteRow(item.id, item.amount)} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="bg-white rounded-full absolute top-5 right-0 w-8 h-8">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                                <img className="relative top-2 left-2 inline-block mx-1 w-9 h-9 rounded-full" src={item.user.image} alt="image" />
+                                <p className="inline-block relative top-2">{item.user.name}　<span className="text-sm text-gray-500">{item.paymentDate}</span></p>
+                                <div className="flex flex-col w-full max-w-[800px] leading-1.5 p-1 border-red-200 bg-red-200 rounded">
+                                    <p className="font-normal text-gray-900 text-4xl">{item.amount}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

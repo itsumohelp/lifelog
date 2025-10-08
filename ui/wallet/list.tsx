@@ -88,7 +88,7 @@ export default function Page() {
             resData.forEach((item: Come) => {
                 item.paymentDate = getFormattedDate(
                     new Date(item.paymentDate),
-                    "yyyy/MM/dd",
+                    "yyyy/MM/dd hh:mm:ss",
                 );
             });
         }
