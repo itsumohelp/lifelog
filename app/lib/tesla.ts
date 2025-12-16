@@ -52,6 +52,7 @@ export async function exchangeCodeForToken(code: string) {
     created_at?: number;
     scope?: string;
     token_type?: string;
+    id_token?: string;
   };
 }
 

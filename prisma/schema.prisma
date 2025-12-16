@@ -14,120 +14,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String          @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      account[]
-  sessions      session[]
-  articles      article[]
-  wallet        wallet[]
-  walletshare   walletshare[]
-  come          come[]
-  authenticator authenticator[] 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
- 
-model account {
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@id([provider, providerAccountId])
-}
- 
-model session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
- 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-  @@id([identifier, token])
-}
- 
-model authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
-  counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
-  transports           String?
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@id([userId, credentialID])
+model TeslaAccount {
+  id            String   @id @default(cuid())
+  teslaSub      String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  vehicles      TeslaVehicle[]
 }
 
-model article {
-  id            String   @unique
-  context       String
-  userId        String
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model TeslaVehicle {
+  id                 String   @id @default(cuid())
+  teslaAccountId  String
+  teslaAccount    TeslaAccount  @relation(fields: [teslaAccountId], references: [id], onDelete: Cascade)
+  teslaVehicleId     BigInt   @unique
+  displayName        String?
+  state              String?
+  accessType         String?
+  teslaVehicleIdS    String?  @unique
+  rawJson            Json?
+  firstSeenAt        DateTime @default(now())
+  lastSeenAt         DateTime @updatedAt
+  @@unique([teslaAccountId, teslaVehicleId])
+  @@unique([teslaAccountId, teslaVehicleIdS])
 }
-
-model wallet {
-  id            String @unique
-  name          String
-  balance       Int
-  userId        String
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  come          come[]
-  walletshare   walletshare[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model walletshare {
-  id            String @unique
-  walletId      String
-  userId        String
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model category {
-  id            Int @unique
-  categoryName  String
-  come          come[]
-}
-
-
-model come {
-  id            String @unique
-  amount        Int
-  userId        String
-  walletId      String
-  inout         Int @default(0)
-  categoryId    Int @default(0)
-  category category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  paymentDate   DateTime @default(now())
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wallet wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
