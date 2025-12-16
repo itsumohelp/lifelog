@@ -8,7 +8,7 @@ import {auth} from "@/auth";
 export default function Home() {
     return (
         <div>
-            <h1>Welcome to Wallet Manager 0.1.1</h1>
+            <h1>Welcome to Wallet Manager 0.1.2</h1>
         </div >
     );
 }

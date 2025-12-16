@@ -23,5 +23,5 @@ export async function GET(req: Request) {
   session.oauthState = undefined;
   await session.save();
 
-  return NextResponse.redirect(new URL("/dashboard", req.url));
+  return NextResponse.redirect(new URL("/dashboard", "https://" + process.env.DOMAIN));
 }
