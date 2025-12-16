@@ -1,5 +1,5 @@
 // lib/session.ts
-import {ironSessionOptions} from "iron-session";
+import {SessionOptions} from "iron-session";
 
 export type SessionData = {
   tesla?: {
@@ -19,4 +19,4 @@ export const sessionOptions = {
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
   },
-} satisfies typeof ironSessionOptions;
+} satisfies SessionOptions;
