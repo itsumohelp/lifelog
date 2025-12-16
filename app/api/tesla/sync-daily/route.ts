@@ -157,7 +157,6 @@ export async function POST() {
         batteryLevel,
         chargeLimitSoc,
         odometerKm,
-        status,
         errorStatus,
         errorMessage,
         fetchedAt: new Date(),
