@@ -18,7 +18,22 @@ export async function GET(req: Request) {
     return NextResponse.json({ok: false, error: "state mismatch"}, {status: 400});
   }
 
+  function decodeJwtPayload(token: string): any {
+    const payload = token.split(".")[1];
+    const json = Buffer.from(payload, "base64url").toString("utf8");
+    return JSON.parse(json);
+  }
+
   const token = await exchangeCodeForToken(code);
+
+  // id_token から sub を取り出す
+  if (!token.id_token) throw new Error("missing id_token (need openid scope)");
+  const {sub} = decodeJwtPayload(token.id_token);
+  if (!sub) throw new Error("missing sub in id_token");
+
+  // sessionに入れてもいいし、DBに作ってもいい
+
+  session.teslaSub = sub;
   session.tesla = token;
   session.oauthState = undefined;
   await session.save();

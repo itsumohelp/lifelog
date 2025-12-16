@@ -11,6 +11,7 @@ export type SessionData = {
     token_type?: string;
   };
   oauthState?: string;
+  teslaSub?: string;
 };
 
 export const sessionOptions = {
