@@ -103,7 +103,7 @@ export async function POST() {
     ok: true,
     count: results.length,
     teslaSub,
-    vehicles: results.map((r) => ({
+    vehicles: results.map((r: {teslaVehicleId: {toString: () => any;}; displayName: any; state: any;}) => ({
       teslaVehicleId: r.teslaVehicleId.toString(),
       displayName: r.displayName,
       state: r.state,
