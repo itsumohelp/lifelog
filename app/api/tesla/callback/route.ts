@@ -131,9 +131,5 @@ export async function GET(req: Request) {
   session.oauthState = undefined;
   await session.save();
 
-  // 4) redirect (Azureのhostズレ対策で固定)
-  const baseUrl = process.env.APP_BASE_URL;
-  if (!baseUrl) throw new Error("APP_BASE_URL is not set");
-
-  return NextResponse.redirect(new URL("/dashboard", baseUrl));
+  return NextResponse.redirect(new URL("/dashboard", "https://" + process.env.DOMAIN));
 }
