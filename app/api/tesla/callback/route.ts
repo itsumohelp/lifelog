@@ -87,7 +87,7 @@ async function exchangeCodeForToken(code: string): Promise<TokenResponse> {
   body.set("client_id", process.env.TESLA_CLIENT_ID!);
   body.set("client_secret", process.env.TESLA_CLIENT_SECRET!);
   body.set("code", code);
-  body.set("redirect_uri", process.env.TESLA_REDIRECT_URI!);
+  body.set("redirect_uri", "https://" + process.env.DOMAIN + process.env.TESLA_REDIRECT_URI);
 
   // Fleet API 用 audience（ホストまで /api/1 は付けない）
   body.set("audience", process.env.TESLA_FLEET_BASE_URL!);
