@@ -64,12 +64,10 @@ async function verifyAndGetSubFromIdToken(idToken: string): Promise<string> {
 async function exchangeCodeForToken(code: string): Promise<TokenResponse> {
   const clientId = process.env.TESLA_CLIENT_ID;
   const clientSecret = process.env.TESLA_CLIENT_SECRET;
-  const redirectUri = process.env.TESLA_REDIRECT_URI;
   const audience = process.env.TESLA_FLEET_BASE_URL;
 
   if (!clientId) throw new Error("TESLA_CLIENT_ID is not set");
   if (!clientSecret) throw new Error("TESLA_CLIENT_SECRET is not set");
-  if (!redirectUri) throw new Error("TESLA_REDIRECT_URI is not set");
   if (!audience) throw new Error("TESLA_FLEET_BASE_URL is not set");
 
   const body = new URLSearchParams();
@@ -77,7 +75,7 @@ async function exchangeCodeForToken(code: string): Promise<TokenResponse> {
   body.set("client_id", clientId);
   body.set("client_secret", clientSecret);
   body.set("code", code);
-  body.set("redirect_uri", redirectUri);
+  body.set("redirect_uri", "https://" + process.env.DOMAIN + process.env.TESLA_REDIRECT_URI);
 
   // Fleet API 用 audience（ホストまで。/api/1 は付けない）
   body.set("audience", audience);
