@@ -160,9 +160,6 @@ export async function POST() {
         batteryLevel,
         chargeLimitSoc,
         odometerKm,
-        status,
-        errorStatus,
-        errorMessage,
         fetchedAt: new Date(),
       },
       create: {
@@ -172,9 +169,7 @@ export async function POST() {
         batteryLevel,
         chargeLimitSoc,
         odometerKm,
-        status,
-        errorStatus,
-        errorMessage,
+        fetchedAt: new Date(),
       },
     });
 
