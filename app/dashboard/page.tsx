@@ -27,7 +27,51 @@ export default async function DashboardPage() {
                 orderBy: {lastSeenAt: "desc"},
             },
         },
+    }) || null;
+
+    const todayKey = getJstDayKey(new Date());
+
+    const todaySnapshots = await prisma.teslaVehicleDailySnapshot.findMany({
+        where: {
+            teslaAccountId: account?.id,
+            snapshotDate: todayKey,
+        },
     });
+
+
+    function getJstDayKey(d = new Date()): Date {
+        const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+        const y = jst.getUTCFullYear();
+        const m = jst.getUTCMonth();
+        const day = jst.getUTCDate();
+        const jstMidnightUtc = Date.UTC(y, m, day, 0, 0, 0) - 9 * 60 * 60 * 1000;
+        return new Date(jstMidnightUtc);
+    }
+
+
+
+    function addDays(date: Date, days: number): Date {
+        return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+    }
+
+    // 既にある getJstDayKey を使う前提
+    const yesterdayKey = getJstDayKey(addDays(new Date(), -1));
+
+    const yesterdaySnapshots = await prisma.teslaVehicleDailySnapshot.findMany({
+        where: {teslaAccountId: account?.id, snapshotDate: yesterdayKey},
+    });
+
+    // BigInt -> string key の map にする
+    const todayMap = Object.fromEntries(
+        todaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
+    );
+    const yesterdayMap = Object.fromEntries(
+        yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
+    );
+
+    for (const s of todaySnapshots) {
+        todayMap.set(s.teslaVehicleId.toString(), s);
+    }
 
     const vehicles = account?.vehicles ?? [];
 
@@ -48,7 +92,11 @@ export default async function DashboardPage() {
                 {vehicles.length === 0 ? (
                     <p>車両がありません。上の「車両を同期」を押してください。</p>
                 ) : (
-                    <VehicleCards vehicles={vehicles as any} />
+                    <VehicleCards
+                        vehicles={vehicles as any}
+                        todayMap={todayMap as any}
+                        yesterdayMap={yesterdayMap as any}
+                    />
                 )}
             </section>
             <section style={{display: "grid", gap: 8}}>
