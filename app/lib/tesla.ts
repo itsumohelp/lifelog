@@ -56,8 +56,7 @@ export async function exchangeCodeForToken(code: string) {
 }
 
 export async function callFleetApi(path: string, accessToken: string) {
-  const base = process.env.TESLA_FLEET_BASE_URL!;
-  const url = "https://" + process.env.DOMAIN + `${path}`;
+  const url = process.env.TESLA_FLEET_BASE_URL + `${path}`;
   const res = await fetch(url, {
     headers: {Authorization: `Bearer ${accessToken}`}, // :contentReference[oaicite:8]{index=8}
     cache: "no-store",
