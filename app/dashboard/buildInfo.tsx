@@ -17,7 +17,6 @@ export default function BuildInfo() {
     return (
         <div style={{padding: 12, border: "1px solid #ddd", borderRadius: 8}}>
             <div><b>Build SHA</b>: {info.buildSha}</div>
-            <div><b>Build Time</b>: {info.buildTime}</div>
         </div>
     );
 }
