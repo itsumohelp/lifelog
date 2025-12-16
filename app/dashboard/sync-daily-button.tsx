@@ -22,7 +22,11 @@ export default function SyncDailyButton() {
                 setResult(`NG: ${res.status} ${JSON.stringify(json)}`);
                 return;
             }
-            setResult(`OK: ${json.snapshotDate} vehicles=${json.count}`);
+            setResult(
+                `OK: snapshot=${json.snapshotDateIso}\n` +
+                `vehiclesInAccount=${json.vehiclesInAccount} success=${json.success} fail=${json.fail} savedCount=${json.savedCount}\n` +
+                `results=${JSON.stringify(json.results, null, 2)}`
+            );
         } catch (e: any) {
             setResult(`NG: ${e?.message ?? String(e)}`);
         } finally {

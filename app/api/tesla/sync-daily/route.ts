@@ -10,24 +10,26 @@ function requireEnv(name: string): string {
   return v;
 }
 
-// JSTの“日付キー”を Date にする（JST 00:00 をUTCに変換したDate）
+// JSTの日次キー（JST 00:00 をUTC DateにしてDBのキーにする）
 function getJstDayKey(d = new Date()): Date {
-  // JST = UTC+9
-  const utc = d.getTime();
-  const jst = new Date(utc + 9 * 60 * 60 * 1000);
-
-  // JSTで日付だけに丸める
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
   const y = jst.getUTCFullYear();
   const m = jst.getUTCMonth();
   const day = jst.getUTCDate();
   const jstMidnightUtc = Date.UTC(y, m, day, 0, 0, 0) - 9 * 60 * 60 * 1000;
-
   return new Date(jstMidnightUtc);
 }
 
+type FleetError = {
+  status: number;
+  body: any;
+  message: string;
+};
+
 async function callFleetApi(path: string, accessToken: string) {
-  const base = requireEnv("TESLA_FLEET_BASE_URL"); // 例: https://fleet-api.prd.na.vn.cloud.tesla.com
+  const base = requireEnv("TESLA_FLEET_BASE_URL");
   const url = `${base}${path}`;
+
   const res = await fetch(url, {
     headers: {Authorization: `Bearer ${accessToken}`},
     cache: "no-store",
@@ -35,31 +37,47 @@ async function callFleetApi(path: string, accessToken: string) {
 
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Fleet API error: ${res.status} ${JSON.stringify(json)}`);
+    const err: FleetError = {
+      status: res.status,
+      body: json,
+      message: `Fleet API error: ${res.status} ${JSON.stringify(json)}`,
+    };
+    throw err;
   }
   return json;
 }
 
-function pickSnapshotFields(vehicleData: any) {
-  // vehicle_data の形は環境で揺れるので、null安全に拾う
-  const charge = vehicleData?.response?.charge_state ?? vehicleData?.charge_state;
-  const vstate = vehicleData?.response?.vehicle_state ?? vehicleData?.vehicle_state;
+function isVehicleUnavailable(err: any): boolean {
+  const status = err?.status;
+  const body = err?.body;
+  const msg = err?.message ?? "";
+  const errorText =
+    (typeof body?.error === "string" ? body.error : "") +
+    " " +
+    (typeof body?.error_description === "string" ? body.error_description : "");
 
-  const batteryLevel =
-    typeof charge?.battery_level === "number" ? Math.round(charge.battery_level) : null;
+  return (
+    status === 408 ||
+    msg.includes("vehicle unavailable") ||
+    errorText.includes("vehicle unavailable") ||
+    errorText.includes("offline or asleep")
+  );
+}
 
-  const chargeLimitSoc =
-    typeof charge?.charge_limit_soc === "number" ? Math.round(charge.charge_limit_soc) : null;
+function pickFromChargeState(data: any) {
+  const charge = data?.response ?? data;
+  return {
+    batteryLevel: typeof charge?.battery_level === "number" ? Math.round(charge.battery_level) : null,
+    chargeLimitSoc: typeof charge?.charge_limit_soc === "number" ? Math.round(charge.charge_limit_soc) : null,
+  };
+}
 
-  // Teslaのodometerは mile の場合がある（地域やAPI仕様で揺れやすい）
-  // 今回は “取れたら保存” にして、単位は後で合わせるのが安全
-  let odometerKm: number | null = null;
-  if (typeof vstate?.odometer === "number") {
-    // 多くのケースで miles が返るので、仮に miles→km 変換して保存（欲しくなければそのままでもOK）
-    odometerKm = vstate.odometer * 1.609344;
-  }
-
-  return {batteryLevel, chargeLimitSoc, odometerKm};
+function pickFromVehicleState(data: any) {
+  const vs = data?.response ?? data;
+  // odometer は miles のことが多いので km に変換（不要なら変換を外してもOK）
+  const odometerKm =
+    typeof vs?.odometer === "number" ? vs.odometer * 1.609344 : null;
+  return {odometerKm};
 }
 
 export async function POST() {
@@ -82,53 +100,98 @@ export async function POST() {
 
   const snapshotDate = getJstDayKey(new Date());
 
-  const results: Array<{teslaVehicleId: string; ok: boolean; error?: string}> = [];
+  const results: Array<{teslaVehicleId: string; status: string; errorStatus?: number; errorMessage?: string}> = [];
 
-  // まずは安全に逐次実行（レート制限やスリープ挙動の影響を避けやすい）
+  // 逐次で安全に（スリープ/レート制限回避）
   for (const v of account.vehicles) {
-    try {
-      console.log(`check /api/1/vehicles/${v.teslaVehicleId}/vehicle_data `);
-      const data = await callFleetApi(`/api/1/vehicles/${v.teslaVehicleId}/vehicle_data`, accessToken);
-      const {batteryLevel, chargeLimitSoc, odometerKm} = pickSnapshotFields(data);
+    const id = v.teslaVehicleId.toString();
 
-      await prisma.teslaVehicleDailySnapshot.upsert({
-        where: {
-          uniq_daily_snapshot: {
-            teslaAccountId: account.id,
-            teslaVehicleId: v.teslaVehicleId,
-            snapshotDate,
-          },
-        },
-        update: {
-          batteryLevel,
-          chargeLimitSoc,
-          odometerKm,
-          fetchedAt: new Date(),
-        },
-        create: {
+    let batteryLevel: number | null = null;
+    let chargeLimitSoc: number | null = null;
+    let odometerKm: number | null = null;
+
+    let status: "OK" | "UNAVAILABLE_ASLEEP" | "ERROR" = "OK";
+    let errorStatus: number | null = null;
+    let errorMessage: string | null = null;
+
+    try {
+      // charge_state（より軽い）
+      const chargeData = await callFleetApi(`/api/1/vehicles/${id}/charge_state`, accessToken);
+      const c = pickFromChargeState(chargeData);
+      batteryLevel = c.batteryLevel;
+      chargeLimitSoc = c.chargeLimitSoc;
+    } catch (e: any) {
+      if (isVehicleUnavailable(e)) {
+        status = "UNAVAILABLE_ASLEEP";
+        errorStatus = e.status ?? 408;
+        errorMessage = e.message ?? "vehicle unavailable";
+      } else {
+        status = "ERROR";
+        errorStatus = e.status ?? null;
+        errorMessage = e.message ?? String(e);
+      }
+    }
+
+    // vehicle_state は取れたら取る（失敗してもOK/欠測にする）
+    if (status === "OK") {
+      try {
+        const vsData = await callFleetApi(`/api/1/vehicles/${id}/vehicle_state`, accessToken);
+        const vs = pickFromVehicleState(vsData);
+        odometerKm = vs.odometerKm;
+      } catch (e: any) {
+        // ここは致命扱いにせず、odometerだけ欠測にする
+        //（必要なら status を ERROR に格上げしてもOK）
+      }
+    }
+
+    // ✅ 重要：成功でも失敗でも “その日” のレコードを upsert する（欠測保存）
+    await prisma.teslaVehicleDailySnapshot.upsert({
+      where: {
+        uniq_daily_snapshot: {
           teslaAccountId: account.id,
           teslaVehicleId: v.teslaVehicleId,
           snapshotDate,
-          batteryLevel,
-          chargeLimitSoc,
-          odometerKm,
         },
-      });
+      },
+      update: {
+        batteryLevel,
+        chargeLimitSoc,
+        odometerKm,
+        status,
+        errorStatus,
+        errorMessage,
+        fetchedAt: new Date(),
+      },
+      create: {
+        teslaAccountId: account.id,
+        teslaVehicleId: v.teslaVehicleId,
+        snapshotDate,
+        batteryLevel,
+        chargeLimitSoc,
+        odometerKm,
+        status,
+        errorStatus,
+        errorMessage,
+      },
+    });
 
-      results.push({teslaVehicleId: v.teslaVehicleId.toString(), ok: true});
-    } catch (e: any) {
-      results.push({
-        teslaVehicleId: v.teslaVehicleId.toString(),
-        ok: false,
-        error: e?.message ?? String(e),
-      });
-    }
+    results.push({
+      teslaVehicleId: id,
+      status,
+      ...(errorStatus ? {errorStatus} : {}),
+      ...(errorMessage ? {errorMessage} : {}),
+    });
   }
+
+  const savedCount = await prisma.teslaVehicleDailySnapshot.count({
+    where: {teslaAccountId: account.id, snapshotDate},
+  });
 
   return NextResponse.json({
     ok: true,
-    snapshotDate,
-    count: results.length,
+    snapshotDateIso: snapshotDate.toISOString(),
+    vehicles: account.vehicles.length,
+    savedCount,
     results,
   });
 }
