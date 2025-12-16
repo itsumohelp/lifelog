@@ -40,7 +40,7 @@ async function callFleetApi(path: string, accessToken: string) {
     const err: FleetError = {
       status: res.status,
       body: json,
-      message: `Fleet API error: ${res.status} ${JSON.stringify(json)}`,
+      message: `Fleet API error: ${res.status} ${url} ${JSON.stringify(json)}`,
     };
     throw err;
   }
