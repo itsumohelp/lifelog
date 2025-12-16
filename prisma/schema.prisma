@@ -20,6 +20,7 @@ model TeslaAccount {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   vehicles      TeslaVehicle[]
+  dailySnapshot TeslaVehicleDailySnapshot[]
 }
 
 model TeslaVehicle {
@@ -36,4 +37,19 @@ model TeslaVehicle {
   lastSeenAt         DateTime @updatedAt
   @@unique([teslaAccountId, teslaVehicleId])
   @@unique([teslaAccountId, teslaVehicleIdS])
+}
+
+
+model TeslaVehicleDailySnapshot {
+  id             String       @id @default(cuid())
+  teslaAccountId String
+  teslaAccount   TeslaAccount @relation(fields: [teslaAccountId], references: [id], onDelete: Cascade)
+  teslaVehicleId BigInt
+  snapshotDate   DateTime
+  batteryLevel   Int?     // %
+  chargeLimitSoc Int?     // %
+  odometerKm     Float?   // km（取れたら）
+　fetchedAt      DateTime @default(now())
+  @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
+  @@index([teslaAccountId, snapshotDate])
 }
