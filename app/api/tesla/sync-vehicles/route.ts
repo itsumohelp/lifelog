@@ -1,12 +1,18 @@
 import {NextResponse} from "next/server";
-import {PrismaClient} from "@prisma/client";
-import {getIronSession} from "iron-session";
 import {cookies} from "next/headers";
+import {getIronSession} from "iron-session";
+import {PrismaClient} from "@prisma/client";
 import {sessionOptions, SessionData} from "@/app/lib/session";
-import {callFleetApi} from "@/app/lib/tesla";
 
 const prisma = new PrismaClient();
 
+function requireEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`${name} is not set`);
+  return v;
+}
+
+// VINは絶対保存しない（rawJson含めて除去）
 function stripVin(obj: any) {
   if (!obj || typeof obj !== "object") return obj;
   const copy: any = Array.isArray(obj) ? [...obj] : {...obj};
@@ -16,16 +22,36 @@ function stripVin(obj: any) {
   return copy;
 }
 
+async function callFleetApi(path: string, accessToken: string) {
+  const base = requireEnv("TESLA_FLEET_BASE_URL"); // ホストまで
+  const url = `${base}${path}`;
+
+  const res = await fetch(url, {
+    headers: {Authorization: `Bearer ${accessToken}`},
+    cache: "no-store",
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`Fleet API error: ${res.status} ${JSON.stringify(json)}`);
+  }
+  return json;
+}
+
 export async function POST() {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+
   const accessToken = session.tesla?.access_token;
   const teslaSub = session.teslaSub;
 
   if (!accessToken || !teslaSub) {
-    return NextResponse.json({ok: false, error: "not authed session " + JSON.stringify(session) + " " + teslaSub}, {status: 401});
+    return NextResponse.json(
+      {ok: false, error: "not authed (missing accessToken or teslaSub) teslaSub " + teslaSub},
+      {status: 401}
+    );
   }
 
-  // TeslaAccount を確保
+  // TeslaAccount を確保（teslaSubで紐づけ）
   const account = await prisma.teslaAccount.upsert({
     where: {teslaSub},
     update: {},
@@ -36,6 +62,11 @@ export async function POST() {
   const data = await callFleetApi("/api/1/vehicles", accessToken);
   const vehicles: any[] = data?.response ?? [];
 
+  if (!Array.isArray(vehicles)) {
+    return NextResponse.json({ok: false, error: "unexpected response"}, {status: 500});
+  }
+
+  // DB反映（VINは保存しない）
   const results = await prisma.$transaction(
     vehicles.map((v) => {
       const teslaVehicleId = BigInt(v.id);
@@ -53,7 +84,7 @@ export async function POST() {
           state: v.state ?? null,
           accessType: v.access_type ?? null,
           teslaVehicleIdS,
-          rawJson: stripVin(v),
+          rawJson: stripVin(v), // ← VIN削除後に保存
         },
         create: {
           teslaAccountId: account.id,
@@ -62,11 +93,20 @@ export async function POST() {
           state: v.state ?? null,
           accessType: v.access_type ?? null,
           teslaVehicleIdS,
-          rawJson: stripVin(v),
+          rawJson: stripVin(v), // ← VIN削除後に保存
         },
       });
     })
   );
 
-  return NextResponse.json({ok: true, count: results.length});
+  return NextResponse.json({
+    ok: true,
+    count: results.length,
+    teslaSub,
+    vehicles: results.map((r) => ({
+      teslaVehicleId: r.teslaVehicleId.toString(),
+      displayName: r.displayName,
+      state: r.state,
+    })),
+  });
 }
