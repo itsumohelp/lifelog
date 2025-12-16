@@ -87,7 +87,8 @@ export async function POST() {
   // まずは安全に逐次実行（レート制限やスリープ挙動の影響を避けやすい）
   for (const v of account.vehicles) {
     try {
-      const data = await callFleetApi(`/api/1/vehicles/${v.teslaVehicleId.toString()}/vehicle_data`, accessToken);
+      console.log(`check /api/1/vehicles/${v.teslaVehicleId}/vehicle_data `);
+      const data = await callFleetApi(`/api/1/vehicles/${v.teslaVehicleId}/vehicle_data`, accessToken);
       const {batteryLevel, chargeLimitSoc, odometerKm} = pickSnapshotFields(data);
 
       await prisma.teslaVehicleDailySnapshot.upsert({

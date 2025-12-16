@@ -5,6 +5,7 @@ import {prisma} from "@/prisma";
 import BuildInfo from "@/app/dashboard/build-info"
 import SyncVehiclesButton from "./sync-vehicles-button";
 import SyncDailyButton from "./sync-daily-button";
+import VehicleCards from "./vehicle-cards";
 
 export default async function DashboardPage() {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
@@ -47,30 +48,7 @@ export default async function DashboardPage() {
                 {vehicles.length === 0 ? (
                     <p>車両がありません。上の「車両を同期」を押してください。</p>
                 ) : (
-                    <div style={{overflowX: "auto"}}>
-                        <table style={{borderCollapse: "collapse", width: "100%"}}>
-                            <thead>
-                                <tr>
-                                    <th style={th}>displayName</th>
-                                    <th style={th}>teslaVehicleId</th>
-                                    <th style={th}>state</th>
-                                    <th style={th}>accessType</th>
-                                    <th style={th}>lastSeenAt</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {vehicles.map((v) => (
-                                    <tr key={v.id}>
-                                        <td style={td}>{v.displayName ?? "-"}</td>
-                                        <td style={td}>{v.teslaVehicleId.toString()}</td>
-                                        <td style={td}>{v.state ?? "-"}</td>
-                                        <td style={td}>{v.accessType ?? "-"}</td>
-                                        <td style={td}>{new Date(v.lastSeenAt).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <VehicleCards vehicles={vehicles as any} />
                 )}
             </section>
             <section style={{display: "grid", gap: 8}}>
