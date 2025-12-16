@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import {GoogleAnalytics} from '@next/third-parties/google'
 
 export const metadata: Metadata = {
-    title: "ITSUMO"
+    title: "Marsflare"
 };
 
 export default function RootLayout({

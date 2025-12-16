@@ -8,15 +8,7 @@ import {auth} from "@/auth";
 export default function Home() {
     return (
         <div>
-            <div className="grid grid-cols-5 gap-4 p-1">
-                <div className="col-span-2">
-                    <LogoPage />
-                </div>
-                <div className="col-span-3"  ><UserButton /></div>
-            </div>
-            <SessionProvider>
-                <WalletList />
-            </SessionProvider>
+            <h1>Welcome to Wallet Manager</h1>
         </div >
     );
 }
