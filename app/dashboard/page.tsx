@@ -4,6 +4,7 @@ import {sessionOptions, SessionData} from "@/app/lib/session";
 import {prisma} from "@/prisma";
 import BuildInfo from "@/app/dashboard/build-info"
 import SyncVehiclesButton from "./sync-vehicles-button";
+import SyncDailyButton from "./sync-daily-button";
 
 export default async function DashboardPage() {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
@@ -71,6 +72,11 @@ export default async function DashboardPage() {
                         </table>
                     </div>
                 )}
+            </section>
+            <section style={{display: "grid", gap: 8}}>
+                <h2>日次スナップショット</h2>
+                <p>1日1回、SOC/上限SOC/走行距離を保存します。</p>
+                <SyncDailyButton />
             </section>
         </main>
     );
