@@ -1,11 +1,27 @@
 import {cookies} from "next/headers";
 import {getIronSession} from "iron-session";
-import {sessionOptions, SessionData} from "@/app/lib/session";
+
 import {prisma} from "@/prisma";
-import BuildInfo from "@/app/dashboard/build-info"
+import {sessionOptions, type SessionData} from "@/app/lib/session";
+
+import BuildInfo from "./build-info";
 import SyncVehiclesButton from "./sync-vehicles-button";
 import SyncDailyButton from "./sync-daily-button";
 import VehicleCards from "./vehicle-cards";
+
+// JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
+function getJstDayKey(d = new Date()): Date {
+    const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    const y = jst.getUTCFullYear();
+    const m = jst.getUTCMonth();
+    const day = jst.getUTCDate();
+    const jstMidnightUtc = Date.UTC(y, m, day, 0, 0, 0) - 9 * 60 * 60 * 1000;
+    return new Date(jstMidnightUtc);
+}
+
+function addDays(date: Date, days: number): Date {
+    return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
 
 export default async function DashboardPage() {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
@@ -20,6 +36,7 @@ export default async function DashboardPage() {
         );
     }
 
+    // ログイン中ユーザーの TeslaAccount を取得（車両も一緒に）
     const account = await prisma.teslaAccount.findUnique({
         where: {teslaSub},
         include: {
@@ -27,53 +44,39 @@ export default async function DashboardPage() {
                 orderBy: {lastSeenAt: "desc"},
             },
         },
-    }) || null;
-
-    const todayKey = getJstDayKey(new Date());
-
-    const todaySnapshots = await prisma.teslaVehicleDailySnapshot.findMany({
-        where: {
-            teslaAccountId: account?.id,
-            snapshotDate: todayKey,
-        },
     });
 
-
-    function getJstDayKey(d = new Date()): Date {
-        const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-        const y = jst.getUTCFullYear();
-        const m = jst.getUTCMonth();
-        const day = jst.getUTCDate();
-        const jstMidnightUtc = Date.UTC(y, m, day, 0, 0, 0) - 9 * 60 * 60 * 1000;
-        return new Date(jstMidnightUtc);
+    if (!account) {
+        return (
+            <main style={{padding: 16}}>
+                <h1>Dashboard</h1>
+                <p>Teslaアカウントが見つかりません。</p>
+            </main>
+        );
     }
 
+    const vehicles = account.vehicles ?? [];
 
-
-    function addDays(date: Date, days: number): Date {
-        return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-    }
-
-    // 既にある getJstDayKey を使う前提
+    // 今日・前日（JST）の日次スナップショットを取得
+    const todayKey = getJstDayKey(new Date());
     const yesterdayKey = getJstDayKey(addDays(new Date(), -1));
 
-    const yesterdaySnapshots = await prisma.teslaVehicleDailySnapshot.findMany({
-        where: {teslaAccountId: account?.id, snapshotDate: yesterdayKey},
-    });
+    const [todaySnapshots, yesterdaySnapshots] = await Promise.all([
+        prisma.teslaVehicleDailySnapshot.findMany({
+            where: {teslaAccountId: account.id, snapshotDate: todayKey},
+        }),
+        prisma.teslaVehicleDailySnapshot.findMany({
+            where: {teslaAccountId: account.id, snapshotDate: yesterdayKey},
+        }),
+    ]);
 
-    // BigInt -> string key の map にする
+    // BigInt -> string key の map（Server Componentでも安全な形に）
     const todayMap = Object.fromEntries(
         todaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
     );
     const yesterdayMap = Object.fromEntries(
         yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
     );
-
-    for (const s of todaySnapshots) {
-        todayMap.set(s.teslaVehicleId.toString(), s);
-    }
-
-    const vehicles = account?.vehicles ?? [];
 
     return (
         <main style={{padding: 16, display: "grid", gap: 16}}>
@@ -87,10 +90,18 @@ export default async function DashboardPage() {
             </section>
 
             <section style={{display: "grid", gap: 8}}>
-                <h2>車両一覧（VINは表示しません）</h2>
+                <h2>日次スナップショット</h2>
+                <p style={{margin: 0, color: "#6b7280"}}>
+                    1日1回、SOC/上限SOC/走行距離（取れれば）を保存します。車両がスリープの場合は欠測として保存します。
+                </p>
+                <SyncDailyButton />
+            </section>
+
+            <section style={{display: "grid", gap: 8}}>
+                <h2>車両一覧（今日SOC・前日差分つき）</h2>
 
                 {vehicles.length === 0 ? (
-                    <p>車両がありません。上の「車両を同期」を押してください。</p>
+                    <p>車両がありません。上の「車両同期」を押してください。</p>
                 ) : (
                     <VehicleCards
                         vehicles={vehicles as any}
@@ -99,24 +110,6 @@ export default async function DashboardPage() {
                     />
                 )}
             </section>
-            <section style={{display: "grid", gap: 8}}>
-                <h2>日次スナップショット</h2>
-                <p>1日1回、SOC/上限SOC/走行距離を保存します。</p>
-                <SyncDailyButton />
-            </section>
         </main>
     );
 }
-
-const th: React.CSSProperties = {
-    textAlign: "left",
-    padding: "8px 10px",
-    borderBottom: "1px solid #ddd",
-    whiteSpace: "nowrap",
-};
-
-const td: React.CSSProperties = {
-    padding: "8px 10px",
-    borderBottom: "1px solid #eee",
-    whiteSpace: "nowrap",
-};
