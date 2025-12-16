@@ -31,14 +31,12 @@ type TokenResponse = {
  */
 
 let getKey: JWTVerifyGetKey | null = null;
-let issuerStr: string | null = null;
 
 async function getOidcVerifier(): Promise<{
   getKey: JWTVerifyGetKey;
-  issuer: string;
 }> {
-  if (getKey && issuerStr) {
-    return {getKey, issuer: issuerStr};
+  if (getKey) {
+    return {getKey};
   }
 
   const res = await fetch(DISCOVERY_URL, {cache: "force-cache"});
@@ -48,10 +46,9 @@ async function getOidcVerifier(): Promise<{
 
   const meta = await res.json();
 
-  issuerStr = String(meta.issuer);
   getKey = createRemoteJWKSet(new URL(String(meta.jwks_uri)));
 
-  return {getKey, issuer: issuerStr};
+  return {getKey};
 }
 
 /**
@@ -63,10 +60,9 @@ async function verifyAndGetSubFromIdToken(idToken: string): Promise<string> {
     throw new Error("TESLA_CLIENT_ID is not set");
   }
 
-  const {getKey, issuer} = await getOidcVerifier();
+  const {getKey} = await getOidcVerifier();
 
   const {payload} = await jwtVerify(idToken, getKey, {
-    issuer,
     audience: clientId,
   });
 
