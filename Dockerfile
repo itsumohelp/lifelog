@@ -58,7 +58,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 ENV APP_BUILD_SHA=$APP_BUILD_SHA
-ENV APP_BUILD_TIME=$APP_BUILD_TIME
 
 EXPOSE 3000
 

@@ -22,7 +22,7 @@ export async function POST() {
   const teslaSub = session.teslaSub;
 
   if (!accessToken || !teslaSub) {
-    return NextResponse.json({ok: false, error: "not authed"}, {status: 401});
+    return NextResponse.json({ok: false, error: "not authed session " + JSON.stringify(session) + " " + teslaSub}, {status: 401});
   }
 
   // TeslaAccount を確保
