@@ -9,6 +9,7 @@ export type SessionData = {
     created_at?: number; // epoch sec
     scope?: string;
     token_type?: string;
+    id_token?: string;
   };
   oauthState?: string;
   teslaSub?: string;
