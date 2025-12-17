@@ -3,7 +3,8 @@ import {cookies} from "next/headers";
 import {getIronSession} from "iron-session";
 import {createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey} from "jose";
 import {sessionOptions, SessionData} from "@/app/lib/session";
-
+import {prisma} from "@/prisma";
+import {encrypt} from "@/app/lib/crypto";
 /**
  * Tesla endpoints
  */
@@ -43,6 +44,24 @@ async function getRemoteGetKey(): Promise<JWTVerifyGetKey> {
 
   getKey = createRemoteJWKSet(new URL(jwksUri));
   return getKey;
+}
+
+const CONSENT_VERSION = "2025-12-17.v1";
+
+function requireEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`${name} is not set`);
+  return v;
+}
+
+function extractSubUnsafe(idToken: string): string {
+  const parts = idToken.split(".");
+  if (parts.length < 2) throw new Error("invalid id_token");
+  const payloadJson = Buffer.from(parts[1], "base64url").toString("utf8");
+  const payload = JSON.parse(payloadJson);
+  const sub = payload?.sub;
+  if (!sub) throw new Error("sub missing in id_token");
+  return sub;
 }
 
 async function verifyAndGetSubFromIdToken(idToken: string): Promise<string> {
@@ -122,12 +141,68 @@ export async function GET(req: Request) {
     );
   }
   const sub = await verifyAndGetSubFromIdToken(token.id_token);
+  const now = Date.now();
+  const expiresAtIso =
+    typeof token.expires_in === "number"
+      ? new Date(now + token.expires_in * 1000).toISOString()
+      : new Date(now + 55 * 60 * 1000).toISOString();
 
   // 3) save session
   session.tesla = token;
   session.teslaSub = sub;
   session.oauthState = undefined;
+  session.tesla.expires_at = expiresAtIso;
   await session.save();
+
+
+
+  const shouldStoreForAuto =
+    session.pendingTeslaAutoConsent === true && session.teslaDesiredMode === "AUTO";
+
+  if (shouldStoreForAuto) {
+    // TeslaAccount upsert
+    const account = await prisma.teslaAccount.upsert({
+      where: {teslaSub: session.teslaSub},
+      update: {},
+      create: {teslaSub: session.teslaSub},
+    });
+
+    // TeslaSettings（AUTO + 同意ログ）
+    await prisma.teslaSettings.upsert({
+      where: {teslaAccountId: account.id},
+      update: {
+        mode: "AUTO",
+        consentGivenAt: new Date(),
+        consentVersion: CONSENT_VERSION,
+      },
+      create: {
+        teslaAccountId: account.id,
+        mode: "AUTO",
+        consentGivenAt: new Date(),
+        consentVersion: CONSENT_VERSION,
+      },
+    });
+
+    // refresh_token 保存（暗号化）
+    await prisma.teslaAuthToken.upsert({
+      where: {teslaAccountId: account.id},
+      update: {
+        refreshTokenEnc: encrypt(token.refresh_token ?? ""),
+        accessTokenEnc: encrypt(token.access_token),
+        expiresAt: new Date(expiresAtIso),
+      },
+      create: {
+        teslaAccountId: account.id,
+        refreshTokenEnc: encrypt(token.refresh_token ?? ""),
+        accessTokenEnc: encrypt(token.access_token),
+        expiresAt: new Date(expiresAtIso),
+      },
+    });
+
+    // ✅ 同意フラグは使い切りにする（再利用・なりすまし防止）
+    session.pendingTeslaAutoConsent = false;
+    session.teslaDesiredMode = "MANUAL"; // ここは好み（AUTOのままでもいい）
+  }
 
   return NextResponse.redirect(new URL("/dashboard", "https://" + process.env.DOMAIN));
 }
