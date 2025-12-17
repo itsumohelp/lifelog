@@ -77,23 +77,6 @@ export default async function DashboardPage() {
     const yesterdayMap = Object.fromEntries(
         yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
     );
-    function rangeDiffText(today?: Snapshot, yesterday?: Snapshot) {
-        if (!today || !yesterday) return "レンジ差: -";
-        if (today.status !== "OK" || yesterday.status !== "OK") return "レンジ差: 欠測";
-
-        const tR = today.batteryRangeKm;
-        const yR = yesterday.batteryRangeKm;
-        const tE = today.estBatteryRangeKm;
-        const yE = yesterday.estBatteryRangeKm;
-
-        const fmt = (d: number) => `${d > 0 ? "+" : ""}${Math.round(d)}km`;
-
-        const rated = typeof tR === "number" && typeof yR === "number" ? fmt(tR - yR) : "欠測";
-        const est = typeof tE === "number" && typeof yE === "number" ? fmt(tE - yE) : "欠測";
-
-        return `レンジ差: 定格 ${rated} / 推定 ${est}`;
-    }
-
 
     return (
         <main style={{padding: 16, display: "grid", gap: 16}}>
@@ -113,11 +96,6 @@ export default async function DashboardPage() {
                 </p>
                 <SyncDailyButton />
             </section>
-
-            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                <span style={{color: "#6b7280"}}>Range diff</span>
-                <span style={{textAlign: "right"}}>{rangeDiffText(today, yesterday)}</span>
-            </div>
 
             <section style={{display: "grid", gap: 8}}>
                 <h2>車両一覧（今日SOC・前日差分つき）</h2>
