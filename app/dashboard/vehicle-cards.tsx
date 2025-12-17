@@ -16,8 +16,8 @@ type Snapshot = {
 
     batteryRangeKm: number | null;
     estBatteryRangeKm: number | null;
-    outsideTempC: number | null;
-    insideTempC: number | null;
+    outsideTemp: number | null;
+    insideTemp: number | null;
 
     status: string; // OK / UNAVAILABLE_ASLEEP / ERROR
     errorStatus: number | null;
@@ -120,10 +120,10 @@ function rangeLine(today?: Snapshot) {
 
 function tempLine(today?: Snapshot) {
     if (!today || today.status !== "OK") return "気温: -";
-    const out = fmtTempC(today.outsideTempC);
-    const ins = fmtTempC(today.insideTempC);
+    const out = fmtTempC(today.outsideTemp);
+    const ins = fmtTempC(today.insideTemp);
     // inside が取れない車/状態もあるので、取れてる時だけ出す
-    return today.insideTempC != null
+    return today.insideTemp != null
         ? `気温: 外 ${out} / 車内 ${ins}`
         : `気温: 外 ${out}`;
 }
@@ -148,7 +148,7 @@ function rangeDiffText(today?: Snapshot, yesterday?: Snapshot) {
 function tempDiffText(today?: Snapshot, yesterday?: Snapshot) {
     if (!today || !yesterday) return "-";
     if (today.status !== "OK" || yesterday.status !== "OK") return "欠測";
-    const t = today.outsideTempC, y = yesterday.outsideTempC;
+    const t = today.outsideTemp, y = yesterday.outsideTemp;
     if (typeof t !== "number" || typeof y !== "number") return "欠測";
     const d = t - y;
     return `${d > 0 ? "+" : ""}${d.toFixed(1)}℃`;
@@ -246,9 +246,9 @@ export default function VehicleCards({
                                 <span style={{color: "#6b7280"}}>Temp</span>
                                 <span style={{textAlign: "right"}}>
                                     {today?.status === "OK"
-                                        ? today.insideTempC != null
-                                            ? `外 ${fmtTempC(today.outsideTempC)} / 車内 ${fmtTempC(today.insideTempC)}`
-                                            : `外 ${fmtTempC(today.outsideTempC)}`
+                                        ? today.insideTemp != null
+                                            ? `外 ${fmtTempC(today.outsideTemp)} / 車内 ${fmtTempC(today.insideTemp)}`
+                                            : `外 ${fmtTempC(today.outsideTemp)}`
                                         : "-"}
                                 </span>
                             </div>
