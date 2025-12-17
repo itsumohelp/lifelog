@@ -165,6 +165,7 @@ export default function VehicleCards({
     yesterdayMap: Record<string, Snapshot>;
 }) {
     console.log("Rendering VehicleCards with vehicles:", vehicles);
+    console.log("Rendering VehicleCards with vehicles:", todayMap);
     return (
         <div
             style={{
