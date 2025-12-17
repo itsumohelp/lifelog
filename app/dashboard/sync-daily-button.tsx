@@ -24,7 +24,7 @@ export default function SyncDailyButton() {
             }
             setResult(
                 `OK: snapshot=${json.snapshotDateIso}\n` +
-                `vehiclesInAccount=${json.vehiclesInAccount} success=${json.success} fail=${json.fail} savedCount=${json.savedCount}\n` +
+                `vehiclesInAccount=${json.vehiclesInAccount} savedCount=${json.savedCount}\n` +
                 `results=${JSON.stringify(json.results, null, 2)}`
             );
         } catch (e: any) {
