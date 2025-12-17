@@ -17,6 +17,9 @@ export type SessionData = {
   pendingTeslaAutoConsent?: boolean;     // 同意済みで、これからcallbackでDB保存するフラグ
   teslaAuthFlowId?: string;              // state検証に使うランダムID
   teslaDesiredMode?: "MANUAL" | "AUTO";  // 基本 AUTO のみ使う
+  pendingConsentGivenAt?: string; // ISO
+  pendingConsentVersion?: string; // "v1"
+  pendingTeslaMode?: "MANUAL" | "AUTO";
 };
 
 export const sessionOptions = {

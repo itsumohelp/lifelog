@@ -5,7 +5,7 @@ export function buildAuthorizeUrl(state: string) {
   const url = new URL("https://auth.tesla.com/oauth2/v3/authorize"); // :contentReference[oaicite:3]{index=3}
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", process.env.TESLA_CLIENT_ID!);
-  url.searchParams.set("redirect_uri", "https://" + process.env.DOMAIN + process.env.TESLA_REDIRECT_URI);
+  url.searchParams.set("redirect_uri", process.env.DOMAIN! + process.env.TESLA_REDIRECT_URI);
 
   // 最低限：openid + vehicle_device_data + offline_access（refresh token欲しければ）
   url.searchParams.set(
@@ -32,10 +32,11 @@ export async function exchangeCodeForToken(code: string) {
   body.set("client_secret", process.env.TESLA_CLIENT_SECRET!);
   body.set("code", code);
 
-  // 重要：audience は Fleet API base URL
-  body.set("audience", process.env.TESLA_FLEET_BASE_URL!); // :contentReference[oaicite:7]{index=7}
 
-  body.set("redirect_uri", "https://" + process.env.DOMAIN + process.env.TESLA_REDIRECT_URI);
+  // 重要：audience は Fleet API base URL
+  body.set("audience", process.env.TESLA_FLEET_BASE_URL!);
+
+  body.set("redirect_uri", process.env.DOMAIN! + process.env.TESLA_REDIRECT_URI);
 
   const res = await fetch(tokenUrl, {
     method: "POST",
@@ -44,6 +45,7 @@ export async function exchangeCodeForToken(code: string) {
   });
 
   const json = await res.json();
+
   if (!res.ok) {
     throw new Error(`Token exchange failed: ${res.status} ${JSON.stringify(json)}`);
   }

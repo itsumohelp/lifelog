@@ -100,7 +100,7 @@ export async function POST() {
           state: v.state ?? null,
           accessType: v.access_type ?? null,
           teslaVehicleIdS,
-          rawJson: stripVin(v), // ← VIN削除後に保存
+          rawJson: stripVin(v),
         },
         create: {
           teslaAccountId: account.id,

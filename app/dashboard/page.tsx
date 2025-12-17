@@ -7,7 +7,9 @@ import {sessionOptions, type SessionData} from "@/app/lib/session";
 import BuildInfo from "./build-info";
 import SyncVehiclesButton from "./sync-vehicles-button";
 import SyncDailyButton from "./sync-daily-button";
-import VehicleCards from "./vehicle-cards";
+import VehicleCards, {Vehicle} from "./vehicle-cards";
+import BatteryRangeChart from "./BatteryRangeChart";
+import {OdometerHero} from "./OdometerHero";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -55,7 +57,7 @@ export default async function DashboardPage() {
         );
     }
 
-    const vehicles = account.vehicles ?? [];
+    const vehicles: Vehicle[] = account.vehicles ?? [];
 
     // 今日・前日（JST）の日次スナップショットを取得
     const todayKey = getJstDayKey(new Date());
@@ -78,12 +80,54 @@ export default async function DashboardPage() {
         yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
     );
 
+    const days = 30; // 直近30日
+    const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const rows = await prisma.teslaVehicleDailySnapshot.findMany({
+        where: {
+            teslaAccountId: account.id,
+            teslaVehicleId: vehicles[0].teslaVehicleId,
+            snapshotDate: {gte: from},
+        },
+        orderBy: {snapshotDate: "asc"},
+    });
+
+    const chartData = rows.map((r) => ({
+        date: r.snapshotDate.toISOString().slice(0, 10), // "YYYY-MM-DD"
+        batteryLevel: r.batteryLevel ?? null,
+        batteryRangeKm: r.batteryRangeKm ?? null,
+        estBatteryRangeKm: r.estBatteryRangeKm ?? null,
+    }));
+
     return (
         <main style={{padding: 16, display: "grid", gap: 16}}>
             <h1>Dashboard</h1>
 
-            <BuildInfo />
+            {vehicles.map((v, idx) => (
+                <OdometerHero
+                    key={idx}
+                    odometerKm={todayMap[v.teslaVehicleId.toString()].odometerKm}
+                    deltaKm={todayMap[v.teslaVehicleId.toString()].deltaKm}
+                />
 
+            ))}
+
+            <section style={{display: "grid", gap: 8}}>
+                <h2>車両一覧（今日SOC・前日差分つき）</h2>
+
+                {vehicles.length === 0 ? (
+                    <p>車両がありません。上の「車両同期」を押してください。</p>
+                ) : (
+                    <>
+                        <BatteryRangeChart data={chartData} />
+                        <VehicleCards
+                            vehicles={vehicles as any}
+                            todayMap={todayMap as any}
+                            yesterdayMap={yesterdayMap as any}
+                        />
+                    </>
+                )}
+            </section>
             <section style={{display: "grid", gap: 8}}>
                 <h2>車両同期</h2>
                 <SyncVehiclesButton />
@@ -97,19 +141,6 @@ export default async function DashboardPage() {
                 <SyncDailyButton />
             </section>
 
-            <section style={{display: "grid", gap: 8}}>
-                <h2>車両一覧（今日SOC・前日差分つき）</h2>
-
-                {vehicles.length === 0 ? (
-                    <p>車両がありません。上の「車両同期」を押してください。</p>
-                ) : (
-                    <VehicleCards
-                        vehicles={vehicles as any}
-                        todayMap={todayMap as any}
-                        yesterdayMap={yesterdayMap as any}
-                    />
-                )}
-            </section>
         </main>
     );
 }
