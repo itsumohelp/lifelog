@@ -6,13 +6,17 @@ export type SessionData = {
     access_token: string;
     refresh_token?: string;
     expires_in?: number;
-    created_at?: number; // epoch sec
+    expires_at?: string;
+    created_at?: number;
     scope?: string;
     token_type?: string;
     id_token?: string;
   };
   oauthState?: string;
   teslaSub?: string;
+  pendingTeslaAutoConsent?: boolean;     // 同意済みで、これからcallbackでDB保存するフラグ
+  teslaAuthFlowId?: string;              // state検証に使うランダムID
+  teslaDesiredMode?: "MANUAL" | "AUTO";  // 基本 AUTO のみ使う
 };
 
 export const sessionOptions = {
