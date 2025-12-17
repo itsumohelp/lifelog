@@ -32,7 +32,6 @@ export default async function DashboardPage() {
     if (!teslaSub) {
         return (
             <main style={{padding: 16}}>
-                <h1>Dashboard</h1>
                 <p>未ログインです。先に Tesla ログインしてください。</p>
             </main>
         );
@@ -51,7 +50,6 @@ export default async function DashboardPage() {
     if (!account) {
         return (
             <main style={{padding: 16}}>
-                <h1>Dashboard</h1>
                 <p>Teslaアカウントが見つかりません。</p>
             </main>
         );
@@ -101,17 +99,11 @@ export default async function DashboardPage() {
 
     return (
         <main style={{padding: 16, display: "grid", gap: 16}}>
-            <h1>Dashboard</h1>
-
-            {vehicles.map((v, idx) => (
-                <OdometerHero
-                    key={idx}
-                    odometerKm={todayMap[v.teslaVehicleId.toString()].odometerKm}
-                    deltaKm={todayMap[v.teslaVehicleId.toString()].deltaKm}
-                />
-
-            ))}
-
+            <VehicleCards
+                vehicles={vehicles as any}
+                todayMap={todayMap as any}
+                yesterdayMap={yesterdayMap as any}
+            />
             <section style={{display: "grid", gap: 8}}>
                 <h2>車両一覧（今日SOC・前日差分つき）</h2>
 
@@ -120,11 +112,6 @@ export default async function DashboardPage() {
                 ) : (
                     <>
                         <BatteryRangeChart data={chartData} />
-                        <VehicleCards
-                            vehicles={vehicles as any}
-                            todayMap={todayMap as any}
-                            yesterdayMap={yesterdayMap as any}
-                        />
                     </>
                 )}
             </section>

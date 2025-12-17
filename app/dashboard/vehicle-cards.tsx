@@ -1,4 +1,5 @@
 import React from "react";
+import {OdometerHero} from "./OdometerHero";
 
 export type Vehicle = {
     id: string;
@@ -192,6 +193,7 @@ export default function VehicleCards({
                     >
                         {/* Header */}
                         <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
+                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} />
                             <div style={{minWidth: 0}}>
                                 <div
                                     style={{
@@ -204,14 +206,12 @@ export default function VehicleCards({
                                 >
                                     {v.displayName ?? "Tesla"}
                                 </div>
-                                <div style={{fontSize: 12, color: "#6b7280"}}>Vehicle ID: {key}</div>
                             </div>
-
-                            <div style={{display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end"}}>
-                                {stateBadge(v.state)}
-                                {todayBadge(today)}
-                                {diffBadge(today, yesterday)}
-                            </div>
+                        </div>
+                        <div>
+                            <span className="p-1">{stateBadge(v.state)}</span>
+                            <span className="p-1">{todayBadge(today)}</span>
+                            <span className="p-1">{diffBadge(today, yesterday)}</span>
                         </div>
 
                         {/* Metrics */}
@@ -224,11 +224,6 @@ export default function VehicleCards({
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Last seen</span>
                                 <span>{new Date(v.lastSeenAt).toLocaleString()}</span>
-                            </div>
-
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>Odometer</span>
-                                <span>{today?.status === true ? fmtKm(today.odometerKm) : "-"}</span>
                             </div>
 
                             {/* 追加：レンジ */}
