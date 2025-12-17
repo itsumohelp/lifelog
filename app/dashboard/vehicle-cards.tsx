@@ -19,7 +19,7 @@ type Snapshot = {
     outsideTemp: number | null;
     insideTemp: number | null;
 
-    status: string; // true/false
+    status: boolean;
     errorStatus: number | null;
     errorMessage: string | null;
     fetchedAt: Date;
@@ -55,18 +55,18 @@ function stateBadge(state: string | null) {
 
 function todayBadge(s?: Snapshot) {
     if (!s) return badge("今日: 未取得", "#fff7ed", "#9a3412");
-    if (s.status === "OK" && typeof s.batteryLevel === "number") {
+    if (s.status === true && typeof s.batteryLevel === "number") {
         const limit = typeof s.chargeLimitSoc === "number" ? ` / 上限${s.chargeLimitSoc}%` : "";
         return badge(`SOC ${s.batteryLevel}%${limit}`, "#ecfeff", "#0e7490");
     }
-    if (s.status === "UNAVAILABLE_ASLEEP") return badge("今日: 取得失敗(スリープ)", "#fff7ed", "#9a3412");
+    if (s.status === false) return badge("今日: 取得失敗(スリープ)", "#fff7ed", "#9a3412");
     return badge("今日: 取得失敗", "#fef2f2", "#991b1b");
 }
 
 function diffBadge(today?: Snapshot, yesterday?: Snapshot) {
     if (!today || !yesterday) return badge("前日差: -", "#f3f4f6", "#374151");
 
-    if (today.status !== "OK" || yesterday.status !== "OK") {
+    if (today.status !== true || yesterday.status !== true) {
         return badge("前日差: 欠測", "#fff7ed", "#9a3412");
     }
 
@@ -112,14 +112,14 @@ function fmtKm(n: number | null | undefined): string {
 }
 
 function rangeLine(today?: Snapshot) {
-    if (!today || today.status !== "OK") return "レンジ: -";
+    if (!today || today.status !== true) return "レンジ: -";
     const rated = fmtKm(today.batteryRangeKm);
     const est = fmtKm(today.estBatteryRangeKm);
     return `レンジ: 定格 ${rated} / 推定 ${est}`;
 }
 
 function tempLine(today?: Snapshot) {
-    if (!today || today.status !== "OK") return "気温: -";
+    if (!today || today.status !== true) return "気温: -";
     const out = fmtTempC(today.outsideTemp);
     const ins = fmtTempC(today.insideTemp);
     // inside が取れない車/状態もあるので、取れてる時だけ出す
@@ -130,7 +130,7 @@ function tempLine(today?: Snapshot) {
 
 function rangeDiffText(today?: Snapshot, yesterday?: Snapshot) {
     if (!today || !yesterday) return "レンジ差: -";
-    if (today.status !== "OK" || yesterday.status !== "OK") return "レンジ差: 欠測";
+    if (today.status !== true || yesterday.status !== true) return "レンジ差: 欠測";
 
     const tR = today.batteryRangeKm;
     const yR = yesterday.batteryRangeKm;
@@ -147,7 +147,7 @@ function rangeDiffText(today?: Snapshot, yesterday?: Snapshot) {
 
 function tempDiffText(today?: Snapshot, yesterday?: Snapshot) {
     if (!today || !yesterday) return "-";
-    if (today.status !== "OK" || yesterday.status !== "OK") return "欠測";
+    if (today.status !== true || yesterday.status !== true) return "欠測";
     const t = today.outsideTemp, y = yesterday.outsideTemp;
     if (typeof t !== "number" || typeof y !== "number") return "欠測";
     const d = t - y;
@@ -164,6 +164,9 @@ export default function VehicleCards({
     todayMap: Record<string, Snapshot>;
     yesterdayMap: Record<string, Snapshot>;
 }) {
+    console.log("Rendering VehicleCards with vehicles:", vehicles);
+    console.log("Rendering VehicleCards with todai:", todayMap);
+    console.log("Rendering VehicleCards with yesta:", yesterdayMap);
     return (
         <div
             style={{
@@ -228,14 +231,14 @@ export default function VehicleCards({
 
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Odometer</span>
-                                <span>{today?.status === "true" ? fmtKm(today.odometerKm) : "-"}</span>
+                                <span>{today?.status === true ? fmtKm(today.odometerKm) : "-"}</span>
                             </div>
 
                             {/* 追加：レンジ */}
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Range</span>
                                 <span style={{textAlign: "right"}}>
-                                    {today?.status === "true"
+                                    {today?.status === true
                                         ? `定格 ${fmtKm(today.batteryRangeKm)} / 推定 ${fmtKm(today.estBatteryRangeKm)}`
                                         : "-"}
                                 </span>
@@ -245,7 +248,7 @@ export default function VehicleCards({
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Temp</span>
                                 <span style={{textAlign: "right"}}>
-                                    {today?.status === "true"
+                                    {today?.status === true
                                         ? today.insideTemp != null
                                             ? `外 ${fmtTempC(today.outsideTemp)} / 車内 ${fmtTempC(today.insideTemp)}`
                                             : `外 ${fmtTempC(today.outsideTemp)}`
@@ -264,7 +267,7 @@ export default function VehicleCards({
                             </div>
 
 
-                            {today && today.status !== "true" && today.errorStatus ? (
+                            {today && today.status !== true && today.errorStatus ? (
                                 <div style={{fontSize: 12, color: "#9a3412"}}>
                                     error: {today.errorStatus} {today.errorMessage ?? ""}
                                 </div>
