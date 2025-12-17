@@ -92,10 +92,10 @@ function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
     typeof charge?.est_battery_range === "number" ? charge.est_battery_range * MILE_TO_KM : null;
 
   // ✅ 気温（℃）: climate_state に outside/inside が入ることが多い
-  const outsideTempC =
+  const outsideTemp =
     typeof climate?.outside_temp === "number" ? climate.outside_temp : null;
 
-  const insideTempC =
+  const insideTemp =
     typeof climate?.inside_temp === "number" ? climate.inside_temp : null;
 
   return {
@@ -104,8 +104,8 @@ function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
     odometerKm,
     batteryRangeKm,
     estBatteryRangeKm,
-    outsideTempC,
-    insideTempC,
+    outsideTemp,
+    insideTemp,
   };
 }
 
@@ -166,8 +166,8 @@ export async function POST() {
       odometerKm = picked.odometerKm;
       batteryRangeKm = picked.batteryRangeKm;
       estBatteryRangeKm = picked.estBatteryRangeKm;
-      outsideTemp = picked.outsideTempC;
-      insideTemp = picked.insideTempC;
+      outsideTemp = picked.outsideTemp;
+      insideTemp = picked.insideTemp;
     } catch (e: any) {
       if (isVehicleUnavailable(e)) {
         status = "UNAVAILABLE_ASLEEP";

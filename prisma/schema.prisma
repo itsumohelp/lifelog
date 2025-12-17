@@ -54,6 +54,8 @@ model TeslaVehicleDailySnapshot {
 　fetchedAt      DateTime @default(now())
   batteryRangeKm    Float?
   estBatteryRangeKm Float?
+  outsideTemp Float?
+  insideTemp  Float?
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
 }
