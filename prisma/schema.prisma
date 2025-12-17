@@ -52,6 +52,8 @@ model TeslaVehicleDailySnapshot {
   chargeLimitSoc Int?     // %
   odometerKm     Float?   // km（取れたら）
 　fetchedAt      DateTime @default(now())
+  batteryRangeKm    Float?
+  estBatteryRangeKm Float?
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
 }

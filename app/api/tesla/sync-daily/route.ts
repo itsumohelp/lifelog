@@ -66,11 +66,11 @@ function isVehicleUnavailable(err: any): boolean {
 }
 
 function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
-  // Fleet APIの多くは { response: {...} } 形式
   const root = vehicleData?.response ?? vehicleData;
 
   const charge = root?.charge_state;
   const vstate = root?.vehicle_state;
+  const climate = root?.climate_state;
 
   const batteryLevel =
     typeof charge?.battery_level === "number" ? Math.round(charge.battery_level) : null;
@@ -78,12 +78,37 @@ function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
   const chargeLimitSoc =
     typeof charge?.charge_limit_soc === "number" ? Math.round(charge.charge_limit_soc) : null;
 
-  // odometerは miles が多いので km に変換（不要なら変換外してOK）
+  // odometer は miles のことが多いので km へ
   const odometerKm =
     typeof vstate?.odometer === "number" ? vstate.odometer * 1.609344 : null;
 
-  return {batteryLevel, chargeLimitSoc, odometerKm};
+  // ✅ range は基本 miles → km に変換して保存（日本向け＆比較が楽）
+  const MILE_TO_KM = 1.609344;
+
+  const batteryRangeKm =
+    typeof charge?.battery_range === "number" ? charge.battery_range * MILE_TO_KM : null;
+
+  const estBatteryRangeKm =
+    typeof charge?.est_battery_range === "number" ? charge.est_battery_range * MILE_TO_KM : null;
+
+  // ✅ 気温（℃）: climate_state に outside/inside が入ることが多い
+  const outsideTempC =
+    typeof climate?.outside_temp === "number" ? climate.outside_temp : null;
+
+  const insideTempC =
+    typeof climate?.inside_temp === "number" ? climate.inside_temp : null;
+
+  return {
+    batteryLevel,
+    chargeLimitSoc,
+    odometerKm,
+    batteryRangeKm,
+    estBatteryRangeKm,
+    outsideTempC,
+    insideTempC,
+  };
 }
+
 
 export async function POST() {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
@@ -124,6 +149,10 @@ export async function POST() {
     let batteryLevel: number | null = null;
     let chargeLimitSoc: number | null = null;
     let odometerKm: number | null = null;
+    let batteryRangeKm: number | null = null;
+    let estBatteryRangeKm: number | null = null;
+    let outsideTemp: number | null = null;
+    let insideTemp: number | null = null;
 
     try {
       const data = await callFleetApi(
@@ -135,6 +164,10 @@ export async function POST() {
       batteryLevel = picked.batteryLevel;
       chargeLimitSoc = picked.chargeLimitSoc;
       odometerKm = picked.odometerKm;
+      batteryRangeKm = picked.batteryRangeKm;
+      estBatteryRangeKm = picked.estBatteryRangeKm;
+      outsideTemp = picked.outsideTempC;
+      insideTemp = picked.insideTempC;
     } catch (e: any) {
       if (isVehicleUnavailable(e)) {
         status = "UNAVAILABLE_ASLEEP";
@@ -160,6 +193,10 @@ export async function POST() {
         batteryLevel,
         chargeLimitSoc,
         odometerKm,
+        batteryRangeKm,
+        estBatteryRangeKm,
+        outsideTemp,
+        insideTemp,
         fetchedAt: new Date(),
       },
       create: {
@@ -169,6 +206,10 @@ export async function POST() {
         batteryLevel,
         chargeLimitSoc,
         odometerKm,
+        batteryRangeKm,
+        estBatteryRangeKm,
+        outsideTemp,
+        insideTemp,
         fetchedAt: new Date(),
       },
     });
