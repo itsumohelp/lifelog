@@ -94,7 +94,7 @@ async function exchangeCodeForToken(code: string): Promise<TokenResponse> {
   body.set("client_id", clientId);
   body.set("client_secret", clientSecret);
   body.set("code", code);
-  body.set("redirect_uri", "https://" + process.env.DOMAIN + process.env.TESLA_REDIRECT_URI);
+  body.set("redirect_uri", process.env.DOMAIN! + process.env.TESLA_REDIRECT_URI);
 
   // Fleet API 用 audience（ホストまで。/api/1 は付けない）
   body.set("audience", audience);
@@ -119,6 +119,12 @@ export async function GET(req: Request) {
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const error = searchParams.get("error");
+
+  console.log(" state received: ", state);
+  console.log(" code received: ", code);
+
+  console.log(" state session: ", session.oauthState);
+
 
   if (error) {
     return NextResponse.json({ok: false, error}, {status: 400});
@@ -204,5 +210,5 @@ export async function GET(req: Request) {
     session.teslaDesiredMode = "MANUAL"; // ここは好み（AUTOのままでもいい）
   }
 
-  return NextResponse.redirect(new URL("/dashboard", "https://" + process.env.DOMAIN));
+  return NextResponse.redirect(new URL("/dashboard", process.env.DOMAIN));
 }

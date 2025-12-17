@@ -11,14 +11,17 @@ function requireEnv(name: string): string {
   return v;
 }
 
-export async function GET() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+export async function GET(req: Request) {
 
-  if (!session.pendingTeslaAutoConsent || session.teslaDesiredMode !== "AUTO" || !session.teslaAuthFlowId) {
-    return NextResponse.json(
-      {ok: false, error: "Consent required before Tesla login"},
-      {status: 403}
-    );
+  const jar = await cookies();
+  if (jar.get("mf_tesla_consent")?.value !== "1") {
+    return Response.redirect(new URL("/dashboard/consent", req.url), 302);
+  }
+
+  // ② session gate（本命）
+  const session = await getIronSession<SessionData>(jar, sessionOptions);
+  if (!session.pendingConsentGivenAt) {
+    return Response.redirect(new URL("/tesla/consent", req.url), 302);
   }
 
   const clientId = requireEnv("TESLA_CLIENT_ID");

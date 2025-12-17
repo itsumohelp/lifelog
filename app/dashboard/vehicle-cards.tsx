@@ -1,6 +1,6 @@
 import React from "react";
 
-type Vehicle = {
+export type Vehicle = {
     id: string;
     displayName: string | null;
     teslaVehicleId: bigint;
@@ -164,9 +164,6 @@ export default function VehicleCards({
     todayMap: Record<string, Snapshot>;
     yesterdayMap: Record<string, Snapshot>;
 }) {
-    console.log("Rendering VehicleCards with vehicles:", vehicles);
-    console.log("Rendering VehicleCards with todai:", todayMap);
-    console.log("Rendering VehicleCards with yesta:", yesterdayMap);
     return (
         <div
             style={{
