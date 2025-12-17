@@ -1,3 +1,5 @@
+import {fleetFetchLog} from "./fleetFetch";
+
 // lib/tesla.ts
 export function buildAuthorizeUrl(state: string) {
   const url = new URL("https://auth.tesla.com/oauth2/v3/authorize"); // :contentReference[oaicite:3]{index=3}
@@ -45,6 +47,14 @@ export async function exchangeCodeForToken(code: string) {
   if (!res.ok) {
     throw new Error(`Token exchange failed: ${res.status} ${JSON.stringify(json)}`);
   }
+
+  fleetFetchLog({
+    errorFlg: false,
+    teslaAccountId: "authorization_code_exchange",
+    method: "POST",
+    path: tokenUrl,
+  })
+
   return json as {
     access_token: string;
     refresh_token?: string;

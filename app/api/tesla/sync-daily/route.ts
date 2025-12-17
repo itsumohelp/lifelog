@@ -3,6 +3,7 @@ import {cookies} from "next/headers";
 import {getIronSession} from "iron-session";
 import {prisma} from "@/prisma";
 import {sessionOptions, SessionData} from "@/app/lib/session";
+import {fleetFetchLog} from "@/app/lib/fleetFetch";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -26,7 +27,7 @@ type FleetError = {
   message: string;
 };
 
-async function callFleetApi(path: string, accessToken: string) {
+async function callFleetApi(path: string, accessToken: string, teslaAccountId: string, teslaVehicleIdS?: bigint) {
   const base = requireEnv("TESLA_FLEET_BASE_URL"); // 例: https://fleet-api.prd.na.vn.cloud.tesla.com
   const url = `${base}${path}`;
 
@@ -42,8 +43,24 @@ async function callFleetApi(path: string, accessToken: string) {
       body: json,
       message: `Fleet API error: ${res.status} ${JSON.stringify(json)}`,
     };
+    fleetFetchLog({
+      errorFlg: true,
+      teslaAccountId: teslaAccountId,
+      method: "POST",
+      path: path,
+      teslaVehicleId: teslaVehicleIdS,
+    })
+
     throw err;
   }
+
+  fleetFetchLog({
+    errorFlg: false,
+    teslaAccountId: teslaAccountId,
+    method: "POST",
+    path: path,
+    teslaVehicleId: teslaVehicleIdS,
+  })
   return json;
 }
 
@@ -157,7 +174,9 @@ export async function POST() {
     try {
       const data = await callFleetApi(
         `/api/1/vehicles/${id}/vehicle_data`,
-        accessToken
+        accessToken,
+        v.teslaAccountId,
+        v.teslaVehicleIdS ? BigInt(v.teslaVehicleIdS) : undefined
       );
 
       const picked = pickSnapshotFieldsFromVehicleData(data);

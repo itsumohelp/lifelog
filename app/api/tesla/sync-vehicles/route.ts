@@ -3,6 +3,7 @@ import {cookies} from "next/headers";
 import {getIronSession} from "iron-session";
 import {PrismaClient} from "@prisma/client";
 import {sessionOptions, SessionData} from "@/app/lib/session";
+import {fleetFetchLog} from "@/app/lib/fleetFetch";
 
 const prisma = new PrismaClient();
 
@@ -22,7 +23,7 @@ function stripVin(obj: any) {
   return copy;
 }
 
-async function callFleetApi(path: string, accessToken: string) {
+async function callFleetApi(path: string, accessToken: string, teslaAccountId: string, teslaVehicleIdS?: bigint) {
   const base = requireEnv("TESLA_FLEET_BASE_URL"); // ホストまで
   const url = `${base}${path}`;
 
@@ -33,8 +34,23 @@ async function callFleetApi(path: string, accessToken: string) {
 
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
+    fleetFetchLog({
+      errorFlg: true,
+      teslaAccountId: teslaAccountId,
+      method: "POST",
+      path: path,
+      teslaVehicleId: teslaVehicleIdS,
+    })
     throw new Error(`Fleet API error: ${res.status} ${JSON.stringify(json)}`);
   }
+  fleetFetchLog({
+    errorFlg: false,
+    teslaAccountId: teslaAccountId,
+    method: "POST",
+    path: path,
+    teslaVehicleId: teslaVehicleIdS,
+  })
+
   return json;
 }
 
@@ -59,7 +75,7 @@ export async function POST() {
   });
 
   // vehicles取得
-  const data = await callFleetApi("/api/1/vehicles", accessToken);
+  const data = await callFleetApi("/api/1/vehicles", accessToken, account.id, undefined);
   const vehicles: any[] = data?.response ?? [];
 
   if (!Array.isArray(vehicles)) {

@@ -90,3 +90,28 @@ model TeslaAuthToken {
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
+
+
+model TeslaFleetApiCallLog {
+  id             String       @id @default(cuid())
+  teslaAccountId String
+  method       String
+  path         String
+  query        Json?
+  requestBody  Json?
+  purpose      String?   // "DAILY_SNAPSHOT" / "USER_ACTION" etc
+  jobRunId     String?   // cron実行IDなど
+  teslaVehicleId BigInt? // 対象車両が特定できるなら入れる
+  statusCode   Int?
+  durationMs   Int?
+  isSuccess    Boolean    @default(false)
+  errorType    String?    // "HTTP" | "TIMEOUT" | "NETWORK" | "PARSING"
+  errorMessage String?    // truncate推奨
+  userAgent    String?
+  ipHash       String?
+  createdAt    DateTime   @default(now())
+  @@index([teslaAccountId, createdAt])
+  @@index([path, createdAt])
+  @@index([purpose, createdAt])
+  @@index([teslaVehicleId, createdAt])
+}
