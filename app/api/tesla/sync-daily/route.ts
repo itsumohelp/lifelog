@@ -4,6 +4,7 @@ import {getIronSession} from "iron-session";
 import {prisma} from "@/prisma";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
+import {stat} from "fs";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -199,7 +200,9 @@ export async function POST() {
       }
     }
 
-    // ✅ 成功でも失敗でも、その日のレコードを必ず upsert（欠測保存）
+    let apiStatus: boolean = false;
+    if (status === "OK") apiStatus = true;
+
     await prisma.teslaVehicleDailySnapshot.upsert({
       where: {
         uniq_daily_snapshot: {
@@ -217,6 +220,7 @@ export async function POST() {
         outsideTemp,
         insideTemp,
         fetchedAt: new Date(),
+        status: apiStatus,
       },
       create: {
         teslaAccountId: account.id,
@@ -230,6 +234,7 @@ export async function POST() {
         outsideTemp,
         insideTemp,
         fetchedAt: new Date(),
+        status: apiStatus,
       },
     });
 

@@ -19,7 +19,7 @@ type Snapshot = {
     outsideTemp: number | null;
     insideTemp: number | null;
 
-    status: string; // OK / UNAVAILABLE_ASLEEP / ERROR
+    status: string; // true/false
     errorStatus: number | null;
     errorMessage: string | null;
     fetchedAt: Date;
@@ -164,8 +164,6 @@ export default function VehicleCards({
     todayMap: Record<string, Snapshot>;
     yesterdayMap: Record<string, Snapshot>;
 }) {
-    console.log("Rendering VehicleCards with vehicles:", vehicles);
-    console.log("Rendering VehicleCards with vehicles:", todayMap);
     return (
         <div
             style={{
@@ -230,14 +228,14 @@ export default function VehicleCards({
 
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Odometer</span>
-                                <span>{today?.status === "OK" ? fmtKm(today.odometerKm) : "-"}</span>
+                                <span>{today?.status === "true" ? fmtKm(today.odometerKm) : "-"}</span>
                             </div>
 
                             {/* 追加：レンジ */}
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Range</span>
                                 <span style={{textAlign: "right"}}>
-                                    {today?.status === "OK"
+                                    {today?.status === "true"
                                         ? `定格 ${fmtKm(today.batteryRangeKm)} / 推定 ${fmtKm(today.estBatteryRangeKm)}`
                                         : "-"}
                                 </span>
@@ -247,7 +245,7 @@ export default function VehicleCards({
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>Temp</span>
                                 <span style={{textAlign: "right"}}>
-                                    {today?.status === "OK"
+                                    {today?.status === "true"
                                         ? today.insideTemp != null
                                             ? `外 ${fmtTempC(today.outsideTemp)} / 車内 ${fmtTempC(today.insideTemp)}`
                                             : `外 ${fmtTempC(today.outsideTemp)}`
@@ -266,7 +264,7 @@ export default function VehicleCards({
                             </div>
 
 
-                            {today && today.status !== "OK" && today.errorStatus ? (
+                            {today && today.status !== "true" && today.errorStatus ? (
                                 <div style={{fontSize: 12, color: "#9a3412"}}>
                                     error: {today.errorStatus} {today.errorMessage ?? ""}
                                 </div>

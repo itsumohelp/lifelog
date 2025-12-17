@@ -56,6 +56,7 @@ model TeslaVehicleDailySnapshot {
   estBatteryRangeKm Float?
   outsideTemp Float?
   insideTemp  Float?
+  status Boolean    @default(false)
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
 }
