@@ -115,6 +115,41 @@ export async function POST() {
     })
   );
 
+  // vehicle options 取得・保存
+  vehicles.map(async (v) => {
+    const request = await callFleetApi("/api/1/dx/vehicles/options?vin=" + v.vin, accessToken, account.id, undefined);
+    const options: any[] = request?.codes ?? [];
+
+    if (request.error) {
+      console.error("Failed to fetch vehicle options for vehicle " + v.id + ": " + JSON.stringify(request.error));
+      return;
+    }
+
+    const optionResults = await prisma.$transaction(
+      options.map((s) => {
+
+        const vehicleId = results.find(r => r.teslaVehicleId === BigInt(v.id))!.id;
+        const vehicleKind = s.code
+        return prisma.vehicleOptions.upsert({
+          where: {
+            vehicleId_code: {
+              vehicleId: vehicleId,
+              code: vehicleKind,
+            },
+          },
+          update: {
+            code: vehicleKind
+          },
+          create: {
+            vehicleId: vehicleId,
+            code: vehicleKind
+          },
+        });
+      })
+    );
+  });
+
+
   return NextResponse.json({
     ok: true,
     count: results.length,
