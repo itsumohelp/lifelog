@@ -17,7 +17,8 @@ export default function RootLayout({
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W114GLVB9"></script>
                 <GoogleAnalytics gaId="G-3W114GLVB9" />
             </head>
-            <body className="">
+            <body>
+                <a className="text-2xl font-bold" href="/">Marsflare</a>
                 {children}
             </body>
         </html>

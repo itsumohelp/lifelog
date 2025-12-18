@@ -37,10 +37,20 @@ model TeslaVehicle {
   rawJson            Json?
   firstSeenAt        DateTime @default(now())
   lastSeenAt         DateTime @updatedAt
+  vehicleOptions VehicleOptions[]
   @@unique([teslaAccountId, teslaVehicleId])
   @@unique([teslaAccountId, teslaVehicleIdS])
 }
 
+model VehicleOptions {
+  id                 String   @id @default(cuid())
+  vehicleId          String
+  teslaVehicle       TeslaVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  code               String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  @@unique([vehicleId, code])
+}
 
 model TeslaVehicleDailySnapshot {
   id             String       @id @default(cuid())

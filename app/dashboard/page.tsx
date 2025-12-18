@@ -3,13 +3,10 @@ import {getIronSession} from "iron-session";
 
 import {prisma} from "@/prisma";
 import {sessionOptions, type SessionData} from "@/app/lib/session";
-
-import BuildInfo from "./build-info";
 import SyncVehiclesButton from "./sync-vehicles-button";
 import SyncDailyButton from "./sync-daily-button";
 import VehicleCards, {Vehicle} from "./vehicle-cards";
 import BatteryRangeChart from "./BatteryRangeChart";
-import {OdometerHero} from "./OdometerHero";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -43,6 +40,11 @@ export default async function DashboardPage() {
         include: {
             vehicles: {
                 orderBy: {lastSeenAt: "desc"},
+                include: {
+                    vehicleOptions: {
+                        orderBy: {code: "asc"},
+                    },
+                },
             },
         },
     });
@@ -98,7 +100,7 @@ export default async function DashboardPage() {
     }));
 
     return (
-        <main style={{padding: 16, display: "grid", gap: 16}}>
+        <main style={{padding: "3px 10px 0px 10px", display: "grid", gap: 16}}>
             <VehicleCards
                 vehicles={vehicles as any}
                 todayMap={todayMap as any}
