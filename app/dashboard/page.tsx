@@ -107,7 +107,7 @@ export default async function DashboardPage() {
                 yesterdayMap={yesterdayMap as any}
             />
             <section style={{display: "grid", gap: 8}}>
-                <h2>車両一覧（今日SOC・前日差分つき）</h2>
+                <b>電池残量 / 走行可能距離</b>
 
                 {vehicles.length === 0 ? (
                     <p>車両がありません。上の「車両同期」を押してください。</p>
