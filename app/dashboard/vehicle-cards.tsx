@@ -224,7 +224,7 @@ export default function VehicleCards({
 
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>最終データ取得日</span>
-                                <span>{new Date(v.lastSeenAt).toLocaleString()}</span>
+                                <span>{new Date(v.lastSeenAt).toLocaleString('ja-JP', {timeZone: 'Asia/Tokyo'})}</span>
                             </div>
 
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
@@ -292,21 +292,6 @@ export default function VehicleCards({
                                     error: {today.errorStatus} {today.errorMessage ?? ""}
                                 </div>
                             ) : null}
-                        </div>
-
-                        {/* Footer */}
-                        <div
-                            style={{
-                                borderTop: "1px solid #f3f4f6",
-                                paddingTop: 10,
-                                display: "flex",
-                                gap: 8,
-                            }}
-                        >
-                            <div style={{flex: 1}} />
-                            <span style={{fontSize: 12, color: "#9ca3af"}}>
-                                {today ? `fetched: ${new Date(today.fetchedAt).toLocaleTimeString()}` : ""}
-                            </span>
                         </div>
                     </div>
                 );

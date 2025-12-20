@@ -21,7 +21,6 @@ type Point = {
 export default function BatteryRangeChart({data}: {data: Point[]}) {
     return (
         <div style={{border: "1px solid #ddd", borderRadius: 12, padding: 12}}>
-            <h2 style={{margin: 0}}>電池残量 / 走行可能距離（直近）</h2>
             <div style={{width: "100%", height: 320, marginTop: 12}}>
                 <ResponsiveContainer>
                     <LineChart data={data}>
