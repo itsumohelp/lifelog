@@ -8,6 +8,7 @@ type FleetFetchOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   path: string;
   teslaVehicleId?: bigint;
+  errorMessage?: string;
 };
 
 
@@ -27,7 +28,8 @@ export async function fleetFetchLog<T = any>(opts: FleetFetchOptions) {
         method: opts.method ?? "GET",
         path: opts.path,
         isSuccess: !opts.errorFlg,
-        statusCode: opts.statusCode
+        statusCode: opts.statusCode,
+        errorMessage: opts.errorMessage ? maskJson(opts.errorMessage) : undefined,
       },
     });
   } catch (e: any) {
@@ -44,4 +46,22 @@ export async function fleetFetchLog<T = any>(opts: FleetFetchOptions) {
     });
     throw e;
   }
+}
+
+export async function fleetFetch(
+  accessToken: string,
+  path: string,
+  init?: RequestInit
+): Promise<Response> {
+  const base = process.env.TESLA_FLEET_BASE_URL;
+  if (!base) throw new Error("TESLA_FLEET_BASE_URL is not set");
+
+  const url = `${base}${path}`;
+
+  return fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    cache: "no-store",
+  });
 }

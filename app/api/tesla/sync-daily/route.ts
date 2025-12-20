@@ -4,7 +4,8 @@ import {getIronSession} from "iron-session";
 import {prisma} from "@/prisma";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
-import {stat} from "fs";
+import {getTeslaMode} from "@/app/setting/tesla/actions";
+import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -48,8 +49,9 @@ async function callFleetApi(path: string, accessToken: string, teslaAccountId: s
       errorFlg: true,
       teslaAccountId: teslaAccountId,
       method: "POST",
-      path: path,
+      path: "/api/1/vehicles/VEHICLETAG/vehicle_data",
       teslaVehicleId: teslaVehicleIdS,
+      errorMessage: res.status == 408 ? "408 vehicle was sleeping" : undefined
     })
 
     throw err;
@@ -116,6 +118,9 @@ function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
   const insideTemp =
     typeof climate?.inside_temp === "number" ? climate.inside_temp : null;
 
+  const chargeEnergyAdded =
+    typeof charge?.charge_energy_added === "number" ? charge.charge_energy_added : null;
+
   return {
     batteryLevel,
     chargeLimitSoc,
@@ -124,16 +129,16 @@ function pickSnapshotFieldsFromVehicleData(vehicleData: any) {
     estBatteryRangeKm,
     outsideTemp,
     insideTemp,
+    chargeEnergyAdded,
   };
 }
 
 
 export async function POST() {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-  const accessToken = session.tesla?.access_token;
   const teslaSub = session.teslaSub;
 
-  if (!accessToken || !teslaSub) {
+  if (!teslaSub) {
     return NextResponse.json({ok: false, error: "not authed"}, {status: 401});
   }
 
@@ -144,6 +149,15 @@ export async function POST() {
 
   if (!account) {
     return NextResponse.json({ok: false, error: "tesla account not found"}, {status: 404});
+  }
+
+  const SyncMode = await getTeslaMode(account.id);
+  let accessToken = session.tesla?.access_token;
+  if (SyncMode === "AUTO") {
+    accessToken = await getAccessTokenFromDB(account.id);
+  }
+  if (!accessToken) {
+    return NextResponse.json({ok: false, error: "missing access token"}, {status: 401});
   }
 
   const snapshotDate = getJstDayKey(new Date());
@@ -171,6 +185,7 @@ export async function POST() {
     let estBatteryRangeKm: number | null = null;
     let outsideTemp: number | null = null;
     let insideTemp: number | null = null;
+    let chargeEnergyAdded: number | null = null;
 
     try {
       const data = await callFleetApi(
@@ -188,6 +203,7 @@ export async function POST() {
       estBatteryRangeKm = picked.estBatteryRangeKm;
       outsideTemp = picked.outsideTemp;
       insideTemp = picked.insideTemp;
+      chargeEnergyAdded = picked.chargeEnergyAdded;
     } catch (e: any) {
       if (isVehicleUnavailable(e)) {
         status = "UNAVAILABLE_ASLEEP";
@@ -219,6 +235,7 @@ export async function POST() {
         estBatteryRangeKm,
         outsideTemp,
         insideTemp,
+        chargeEnergyAdded,
         fetchedAt: new Date(),
         status: apiStatus,
       },
@@ -233,6 +250,7 @@ export async function POST() {
         estBatteryRangeKm,
         outsideTemp,
         insideTemp,
+        chargeEnergyAdded,
         fetchedAt: new Date(),
         status: apiStatus,
       },

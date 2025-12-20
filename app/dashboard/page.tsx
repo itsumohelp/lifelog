@@ -129,6 +129,7 @@ export default async function DashboardPage() {
                 </p>
                 <SyncDailyButton />
             </section>
+            <a href="/dashboard/api-log" target="_blank" rel="noreferrer">APIログを見る</a> <a href="/setting/tesla" target="_blank" rel="noreferrer">設定を見る</a>
 
         </main>
     );

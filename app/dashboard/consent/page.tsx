@@ -15,6 +15,7 @@ export default function TeslaConsentPage() {
             <section className="mt-6 rounded-xl border bg-slate-50 p-4">
                 <h2 className="font-semibold">取得するデータ</h2>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                    <li>車体グレード、色、内装、タイヤ</li>
                     <li>バッテリー残量（%）</li>
                     <li>走行可能距離</li>
                     <li>走行距離（オドメーター）</li>

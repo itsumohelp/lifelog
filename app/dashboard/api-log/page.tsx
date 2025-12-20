@@ -48,14 +48,13 @@ export default async function Page() {
 
             <div className="rounded-2xl border p-3">
                 <div className="grid grid-cols-6 gap-2 text-sm font-medium opacity-70">
-                    <div>日時</div><div>purpose</div><div>method</div><div className="col-span-2">path</div><div>結果</div>
+                    <div>日時</div><div>method</div><div className="col-span-2">path</div><div>結果</div>
                 </div>
 
                 <div className="mt-2 space-y-2">
                     {logs.map((l: {id: Key | null | undefined; createdAt: string | number | Date; purpose: any; method: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; path: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; isSuccess: any; statusCode: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; durationMs: any; errorMessage: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; errorType: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined;}) => (
                         <div key={l.id} className="grid grid-cols-6 gap-2 text-sm rounded-xl border p-2">
                             <div>{new Date(l.createdAt).toLocaleString("ja-JP")}</div>
-                            <div className="truncate">{l.purpose ?? "-"}</div>
                             <div>{l.method}</div>
                             <div className="col-span-2 truncate">{l.path}</div>
                             <div>

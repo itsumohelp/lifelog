@@ -23,6 +23,7 @@ model TeslaAccount {
   dailySnapshot TeslaVehicleDailySnapshot[]
   settings  TeslaSettings?
   authToken TeslaAuthToken?
+  syncJob SyncJob[]
 }
 
 model TeslaVehicle {
@@ -66,6 +67,7 @@ model TeslaVehicleDailySnapshot {
   estBatteryRangeKm Float?
   outsideTemp Float?
   insideTemp  Float?
+  chargeEnergyAdded Float?
   status Boolean    @default(false)
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
@@ -125,4 +127,35 @@ model TeslaFleetApiCallLog {
   @@index([path, createdAt])
   @@index([purpose, createdAt])
   @@index([teslaVehicleId, createdAt])
+}
+
+model SyncJob {
+  id            String   @id @default(cuid())
+  teslaAccountId String
+  teslaAccount   TeslaAccount @relation(fields: [teslaAccountId], references: [id], onDelete: Cascade)
+  jobType       SyncJobType
+  status        SyncJobStatus
+  scheduledAt   DateTime
+  startedAt     DateTime?
+  finishedAt    DateTime?
+
+  attempt       Int      @default(0)
+  lastError     String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([teslaAccountId, jobType])
+}
+
+enum SyncJobType {
+  SYNC_VEHICLES
+}
+
+enum SyncJobStatus {
+  WAITING   // 実行待ち
+  RUNNING   // 実行中
+  SUCCESS   // 成功
+  FAILED    // 失敗
 }

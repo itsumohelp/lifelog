@@ -18,7 +18,7 @@ export default function RootLayout({
                 <GoogleAnalytics gaId="G-3W114GLVB9" />
             </head>
             <body>
-                <a className="text-2xl font-bold" href="/">Marsflare</a>
+                <a className="text-2xl font-bold ml-2" href="/">Marsflare</a>
                 {children}
             </body>
         </html>

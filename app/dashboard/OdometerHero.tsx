@@ -21,18 +21,16 @@ export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicle}: Props) {
 
     return (
         <section className="rounded-2xl bg-gradient-to-b from-slate-50 to-white">
-            <span style={{fontSize: "12px", color: "#6b7280"}}>Vehicle ID: {vehicleId}</span>
-            <div>
-                {vehicle.vehicleOptions?.map((opt) => {
-                    const codeText = opt.code in Codes ? Codes[opt.code as keyof typeof Codes] : "";
-                    return (
-                        codeText &&
-                        <span>
-                            {badge(codeText, "#ecfeff", "#0e7490")}
-                        </span>
-                    );
-                })}
-            </div>
+            <span style={{fontSize: "12px", color: "#6b7280", padding: "0 4px 0 0"}}>Vehicle ID: {vehicleId}</span>
+            {vehicle.vehicleOptions?.map((opt) => {
+                const codeText = opt.code in Codes ? Codes[opt.code as keyof typeof Codes] : "";
+                return (
+                    codeText &&
+                    <span>
+                        {badge(codeText, "#ecfeff", "#0e7490")}
+                    </span>
+                );
+            })}
 
             <div className="flex items-baseline gap-2">
                 <div className="text-5xl font-extrabold tracking-tight">
