@@ -1,6 +1,7 @@
 import {prisma} from "@/prisma";
 import {requireTeslaSub} from "@/app/lib/auth-session";
 import TeslaSettingsForm from "./TeslaSettingsForm";
+import {getTeslaMode} from "./actions";
 
 export default async function TeslaSettingsPage() {
     const teslaSub = await requireTeslaSub();
@@ -22,8 +23,7 @@ export default async function TeslaSettingsPage() {
         );
     }
 
-    const mode = account.settings?.mode ?? "MANUAL";
-    const tokenStored = !!account.authToken?.refreshTokenEnc;
+    const mode = await getTeslaMode(account.id);
     const consentGivenAt = account.settings?.consentGivenAt?.toISOString() ?? null;
     const consentVersion = account.settings?.consentVersion ?? null;
 
@@ -33,7 +33,6 @@ export default async function TeslaSettingsPage() {
             <TeslaSettingsForm
                 initial={{
                     mode,
-                    tokenStored,
                     consentGivenAt,
                     consentVersion,
                 }}

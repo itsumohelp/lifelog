@@ -4,6 +4,7 @@ import {getIronSession} from "iron-session";
 import {PrismaClient} from "@prisma/client";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
+import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ function stripVin(obj: any) {
   return copy;
 }
 
-async function callFleetApi(path: string, accessToken: string, teslaAccountId: string, teslaVehicleIdS?: bigint) {
+async function callFleetApi(path: string, accessToken: string, teslaAccountId: string, teslaVehicleIdS?: bigint, optionFlg: boolean = false) {
   const base = requireEnv("TESLA_FLEET_BASE_URL"); // ホストまで
   const url = `${base}${path}`;
 
@@ -38,7 +39,7 @@ async function callFleetApi(path: string, accessToken: string, teslaAccountId: s
       errorFlg: true,
       teslaAccountId: teslaAccountId,
       method: "POST",
-      path: path,
+      path: optionFlg ? "/api/1/dx/vehicles/options?vin=VIN" : path,
       teslaVehicleId: teslaVehicleIdS,
     })
     throw new Error(`Fleet API error: ${res.status} ${JSON.stringify(json)}`);
@@ -47,7 +48,7 @@ async function callFleetApi(path: string, accessToken: string, teslaAccountId: s
     errorFlg: false,
     teslaAccountId: teslaAccountId,
     method: "POST",
-    path: path,
+    path: optionFlg ? "/api/1/dx/vehicles/options?vin=VIN" : path,
     teslaVehicleId: teslaVehicleIdS,
   })
 
@@ -56,13 +57,11 @@ async function callFleetApi(path: string, accessToken: string, teslaAccountId: s
 
 export async function POST() {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-
-  const accessToken = session.tesla?.access_token;
   const teslaSub = session.teslaSub;
 
-  if (!accessToken || !teslaSub) {
+  if (!teslaSub) {
     return NextResponse.json(
-      {ok: false, error: "not authed (missing accessToken or teslaSub) teslaSub " + teslaSub},
+      {ok: false, error: "not authed (missing teslaSub)"},
       {status: 401}
     );
   }
@@ -74,6 +73,14 @@ export async function POST() {
     create: {teslaSub},
   });
 
+  const accessToken = await getAccessTokenFromDB(account.id);
+  if (!accessToken) {
+    return NextResponse.json(
+      {ok: false, error: "not authed (missing accessToken)"},
+      {status: 401}
+    );
+  }
+
   // vehicles取得
   const data = await callFleetApi("/api/1/vehicles", accessToken, account.id, undefined);
   const vehicles: any[] = data?.response ?? [];
@@ -81,6 +88,8 @@ export async function POST() {
   if (!Array.isArray(vehicles)) {
     return NextResponse.json({ok: false, error: "unexpected response"}, {status: 500});
   }
+
+
 
   // DB反映（VINは保存しない）
   const results = await prisma.$transaction(
@@ -117,7 +126,7 @@ export async function POST() {
 
   // vehicle options 取得・保存
   vehicles.map(async (v) => {
-    const request = await callFleetApi("/api/1/dx/vehicles/options?vin=" + v.vin, accessToken, account.id, undefined);
+    const request = await callFleetApi("/api/1/dx/vehicles/options?vin=" + v.vin, accessToken, account.id, undefined, true);
     const options: any[] = request?.codes ?? [];
 
     if (request.error) {

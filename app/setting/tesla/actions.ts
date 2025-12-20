@@ -19,6 +19,22 @@ type SaveInput = {
   consentStoreToken: boolean;
 };
 
+export async function getTeslaMode(teslaAccountId: string): Promise<"MANUAL" | "AUTO"> {
+  const teslaSub = await requireTeslaSub();
+  const account = await prisma.teslaAccount.findUnique({
+    where: {teslaSub},
+    include: {authToken: true, settings: true},
+  });
+  if (!account) throw new Error("TeslaAccount not found");
+
+  const settings = await prisma.teslaSettings.findUnique({
+    where: {teslaAccountId},
+  });
+
+  return settings?.mode ?? "MANUAL";
+}
+
+
 export async function saveTeslaSettings(input: SaveInput) {
   const teslaSub = await requireTeslaSub();
 
@@ -33,26 +49,34 @@ export async function saveTeslaSettings(input: SaveInput) {
     if (!input.consentUnderstand || !input.consentStoreToken) {
       throw new Error("Consent required to enable AUTO mode");
     }
-    // AUTOには refresh_token が必要（DB保存前提）
-    if (!account.authToken?.refreshTokenEnc) {
-      throw new Error("No refresh token stored yet. Complete login/token registration first.");
-    }
   }
 
-  await prisma.teslaSettings.upsert({
-    where: {teslaAccountId: account.id},
-    update: {
-      mode: input.mode,
-      consentGivenAt: input.mode === "AUTO" ? new Date() : account.settings?.consentGivenAt ?? null,
-      consentVersion: input.mode === "AUTO" ? CONSENT_VERSION : account.settings?.consentVersion ?? null,
-    },
-    create: {
-      teslaAccountId: account.id,
-      mode: input.mode,
-      consentGivenAt: input.mode === "AUTO" ? new Date() : null,
-      consentVersion: input.mode === "AUTO" ? CONSENT_VERSION : null,
-    },
-  });
+  if (input.mode === "AUTO") {
+    await prisma.teslaSettings.upsert({
+      where: {teslaAccountId: account.id},
+      update: {
+        mode: input.mode,
+        consentGivenAt: new Date(),
+        consentVersion: CONSENT_VERSION,
+      },
+      create: {
+        teslaAccountId: account.id,
+        mode: input.mode,
+        consentGivenAt: new Date(),
+        consentVersion: CONSENT_VERSION,
+      },
+    });
+
+  } else {
+    await prisma.$transaction([
+      prisma.teslaAuthToken.deleteMany({where: {teslaAccountId: account.id}}),
+      prisma.teslaSettings.upsert({
+        where: {teslaAccountId: account.id},
+        update: {mode: "MANUAL"},
+        create: {teslaAccountId: account.id, mode: "MANUAL"},
+      }),
+    ]);
+  }
 
   revalidatePath("/settings/tesla");
   return {ok: true as const};
@@ -132,8 +156,9 @@ export async function disconnectTesla() {
 export async function agreeAndStartTeslaLogin(input: {
   consentUnderstand: boolean;
   consentStoreToken: boolean;
+  fromSettings?: boolean;
 }) {
-  if (!input.consentUnderstand || !input.consentStoreToken) {
+  if (!input.fromSettings && (!input.consentUnderstand || !input.consentStoreToken)) {
     throw new Error("同意チェックが必要です。");
   }
 

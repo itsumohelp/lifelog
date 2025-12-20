@@ -189,7 +189,7 @@ export default function VehicleCards({
                         style={{
                             border: "1px solid #e5e7eb",
                             borderRadius: 12,
-                            padding: 14,
+                            padding: "5px 10px 10px 10px",
                             background: "white",
                             boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                             display: "grid",
@@ -221,9 +221,15 @@ export default function VehicleCards({
                         {/* Metrics */}
                         <div style={{display: "grid", gap: 6, fontSize: 13, color: "#111827"}}>
 
+
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>車両同期日</span>
+                                <span style={{color: "#6b7280"}}>最終データ取得日</span>
                                 <span>{new Date(v.lastSeenAt).toLocaleString()}</span>
+                            </div>
+
+                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
+                                <span style={{color: "#6b7280"}}>今日の電費</span>
+                                <span>{Math.trunc((today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null) / ((yesterday.batteryLevel - today.batteryLevel) / 100 * 60))} km/kWh</span>
                             </div>
 
                             {/* 追加：レンジ */}
