@@ -229,7 +229,18 @@ export default function VehicleCards({
 
                             <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
                                 <span style={{color: "#6b7280"}}>今日の電費</span>
-                                <span>{Math.trunc((today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null) / ((yesterday.batteryLevel - today.batteryLevel) / 100 * 60))} km/kWh</span>
+                                <span>
+                                    {today?.odometerKm != null &&
+                                        yesterday?.odometerKm != null &&
+                                        today.batteryLevel != null &&
+                                        yesterday.batteryLevel != null
+                                        ? Math.trunc(
+                                            (today.odometerKm - yesterday.odometerKm) /
+                                            ((yesterday.batteryLevel - today.batteryLevel) / 100 * 60)
+                                        )
+                                        : "-"}{" "}
+                                    km/kWh
+                                </span>
                             </div>
 
                             {/* 追加：レンジ */}
