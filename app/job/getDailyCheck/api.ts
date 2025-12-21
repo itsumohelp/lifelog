@@ -32,11 +32,38 @@ export async function fetchVehicles(accessToken: string): Promise<FleetVehicle[]
     path: "/api/1/vehicles",
     teslaVehicleId: undefined
   })
-  console.log("Fetched vehicles successfully.");
 
   const json = await res.json();
-  return json?.response ?? [];
+  return json.response ?? [];
 }
+
+
+export async function fetchOptions(accessToken: string, vin: string, teslaAccountId: string, teslaVehicleId?: bigint): Promise<any> {
+  const res = await fleetFetch(accessToken, "/api/1/dx/vehicles/options?vin=" + vin);
+
+  if (!res.ok) {
+    const text = await res.text();
+    fleetFetchLog({
+      errorFlg: true,
+      teslaAccountId: teslaAccountId,
+      method: "POST",
+      path: "/api/1/dx/vehicles/options?vin=VIN",
+      teslaVehicleId: teslaVehicleId,
+    })
+    throw new Error(`fetchVehicles failed: ${res.status} ${text}`);
+  }
+
+  fleetFetchLog({
+    errorFlg: false,
+    teslaAccountId: teslaAccountId,
+    method: "POST",
+    path: "/api/1/dx/vehicles/options?vin=VIN",
+    teslaVehicleId: teslaVehicleId,
+  })
+
+  return await res.json() ?? [];
+}
+
 
 export type VehicleDataResponse = {
   charge_state?: {

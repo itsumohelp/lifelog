@@ -36,6 +36,8 @@ model TeslaVehicle {
   accessType         String?
   teslaVehicleIdS    String?  @unique
   rawJson            Json?
+  vehicleGrade       String?
+  capacityKwh        Float?
   firstSeenAt        DateTime @default(now())
   lastSeenAt         DateTime @updatedAt
   vehicleOptions VehicleOptions[]
@@ -69,6 +71,12 @@ model TeslaVehicleDailySnapshot {
   insideTemp  Float?
   chargeEnergyAdded Float?
   status Boolean    @default(false)
+  prevSnapshotDate　DateTime?
+  odometerDeltaKm Float?
+  batteryDeltaPct Int?
+  energyUsedKwh Float?
+  efficiencyKmPerKwh Float?
+  efficiencyType String?
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
 }

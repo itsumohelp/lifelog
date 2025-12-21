@@ -6,6 +6,7 @@ import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
 import {getTeslaMode} from "@/app/setting/tesla/actions";
 import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
+import {syncVehiclesAndDailySnapshot} from "@/app/job/getDailyCheck/syncVehicles";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -160,111 +161,9 @@ export async function POST() {
     return NextResponse.json({ok: false, error: "missing access token"}, {status: 401});
   }
 
+  syncVehiclesAndDailySnapshot({teslaAccountId: account.id, accessToken: accessToken});
+
   const snapshotDate = getJstDayKey(new Date());
-
-  const results: Array<{
-    teslaVehicleId: string;
-    status: "OK" | "UNAVAILABLE_ASLEEP" | "ERROR";
-    batteryLevel?: number | null;
-    chargeLimitSoc?: number | null;
-    errorStatus?: number | null;
-    errorMessage?: string | null;
-  }> = [];
-
-  for (const v of account.vehicles) {
-    const id = v.teslaVehicleId.toString();
-
-    let status: "OK" | "UNAVAILABLE_ASLEEP" | "ERROR" = "OK";
-    let errorStatus: number | null = null;
-    let errorMessage: string | null = null;
-
-    let batteryLevel: number | null = null;
-    let chargeLimitSoc: number | null = null;
-    let odometerKm: number | null = null;
-    let batteryRangeKm: number | null = null;
-    let estBatteryRangeKm: number | null = null;
-    let outsideTemp: number | null = null;
-    let insideTemp: number | null = null;
-    let chargeEnergyAdded: number | null = null;
-
-    try {
-      const data = await callFleetApi(
-        `/api/1/vehicles/${id}/vehicle_data`,
-        accessToken,
-        v.teslaAccountId,
-        v.teslaVehicleIdS ? BigInt(v.teslaVehicleIdS) : undefined
-      );
-
-      const picked = pickSnapshotFieldsFromVehicleData(data);
-      batteryLevel = picked.batteryLevel;
-      chargeLimitSoc = picked.chargeLimitSoc;
-      odometerKm = picked.odometerKm;
-      batteryRangeKm = picked.batteryRangeKm;
-      estBatteryRangeKm = picked.estBatteryRangeKm;
-      outsideTemp = picked.outsideTemp;
-      insideTemp = picked.insideTemp;
-      chargeEnergyAdded = picked.chargeEnergyAdded;
-    } catch (e: any) {
-      if (isVehicleUnavailable(e)) {
-        status = "UNAVAILABLE_ASLEEP";
-        errorStatus = e.status ?? 408;
-        errorMessage = e.message ?? "vehicle unavailable";
-      } else {
-        status = "ERROR";
-        errorStatus = e.status ?? null;
-        errorMessage = e.message ?? String(e);
-      }
-    }
-
-    let apiStatus: boolean = false;
-    if (status === "OK") apiStatus = true;
-
-    await prisma.teslaVehicleDailySnapshot.upsert({
-      where: {
-        uniq_daily_snapshot: {
-          teslaAccountId: account.id,
-          teslaVehicleId: v.teslaVehicleId,
-          snapshotDate,
-        },
-      },
-      update: {
-        batteryLevel,
-        chargeLimitSoc,
-        odometerKm,
-        batteryRangeKm,
-        estBatteryRangeKm,
-        outsideTemp,
-        insideTemp,
-        chargeEnergyAdded,
-        fetchedAt: new Date(),
-        status: apiStatus,
-      },
-      create: {
-        teslaAccountId: account.id,
-        teslaVehicleId: v.teslaVehicleId,
-        snapshotDate,
-        batteryLevel,
-        chargeLimitSoc,
-        odometerKm,
-        batteryRangeKm,
-        estBatteryRangeKm,
-        outsideTemp,
-        insideTemp,
-        chargeEnergyAdded,
-        fetchedAt: new Date(),
-        status: apiStatus,
-      },
-    });
-
-    results.push({
-      teslaVehicleId: id,
-      status,
-      batteryLevel,
-      chargeLimitSoc,
-      errorStatus,
-      errorMessage,
-    });
-  }
 
   const savedCount = await prisma.teslaVehicleDailySnapshot.count({
     where: {teslaAccountId: account.id, snapshotDate},
@@ -275,6 +174,5 @@ export async function POST() {
     snapshotDateIso: snapshotDate.toISOString(),
     vehicles: account.vehicles.length,
     savedCount,
-    results,
   });
 }

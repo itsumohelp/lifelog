@@ -4,15 +4,15 @@ import {badge, Vehicle} from "./vehicle-cards";
 type Props = {
     vehicleId: string;
     odometerKm: number | null;
-    deltaKm: number | null; // 前日比（欠測なら null）
-    vehicle: Vehicle;
+    deltaKm: number | null;
+    vehicleGrade: string | null;
 };
 
 function formatKm(n: number) {
     return n.toLocaleString("ja-JP", {maximumFractionDigits: 0});
 }
 
-export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicle}: Props) {
+export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicleGrade}: Props) {
     const isMissing = odometerKm == null;
 
     const sign =
@@ -21,19 +21,14 @@ export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicle}: Props) {
 
     return (
         <section className="rounded-2xl bg-gradient-to-b from-slate-50 to-white">
-            <span style={{fontSize: "12px", color: "#6b7280", padding: "0 4px 0 0"}}>Vehicle ID: {vehicleId}</span>
-            {vehicle.vehicleOptions?.map((opt) => {
-                const codeText = opt.code in Codes ? Codes[opt.code as keyof typeof Codes] : "";
-                return (
-                    codeText &&
-                    <span>
-                        {badge(codeText, "#ecfeff", "#0e7490")}
-                    </span>
-                );
-            })}
+            <div>
+                <span key="vehicleId" className="flex items-center gap-2">
+                    {badge(vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}<span style={{fontSize: "12px", color: "#6b7280", padding: "0 2px 0 0"}}>{vehicleId}</span>
+                </span>
+            </div>
 
             <div className="flex items-baseline gap-2">
-                <div className="text-5xl font-extrabold tracking-tight">
+                <div className="text-5xl font-extrabold tracking-tight" style={{padding: "0px 0px 0px 5px"}}>
                     {isMissing ? "—" : formatKm(odometerKm)}
                 </div>
                 <div className="text-xl font-bold text-slate-500">km

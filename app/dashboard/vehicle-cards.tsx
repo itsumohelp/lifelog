@@ -12,6 +12,8 @@ export type Vehicle = {
     vehicleOptions?: Array<{
         code: string;
     }>;
+    vehicleGrade?: string | null;
+    capacityKwh?: number | null;
 };
 
 type Snapshot = {
@@ -48,13 +50,6 @@ export function badge(text: string, bg: string, fg: string) {
             {text}
         </span>
     );
-}
-
-function stateBadge(state: string | null) {
-    const s = (state ?? "unknown").toLowerCase();
-    if (s === "online") return badge("online", "#e7f7ee", "#117a37");
-    if (s === "asleep") return badge("asleep", "#eef2ff", "#3730a3");
-    return badge(state ?? "unknown", "#f3f4f6", "#374151");
 }
 
 function todayBadge(s?: Snapshot) {
@@ -189,7 +184,7 @@ export default function VehicleCards({
                         style={{
                             border: "1px solid #e5e7eb",
                             borderRadius: 12,
-                            padding: "5px 10px 10px 10px",
+                            padding: "5px 10px 10px 5px",
                             background: "white",
                             boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                             display: "grid",
@@ -198,8 +193,8 @@ export default function VehicleCards({
                     >
 
                         <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicle={v} />
-                            <div style={{minWidth: 0}}>
+                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.vehicleGrade ?? null} />
+                            {/* <div style={{minWidth: 0}}>
                                 <div
                                     style={{
                                         fontSize: 16,
@@ -211,10 +206,10 @@ export default function VehicleCards({
                                 >
                                     {v.displayName ?? "Tesla"}
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
-                        <div>
-                            <span className="p-1">{todayBadge(today)}</span>
+                        <div style={{margin: " -8px 0px -5px 5px"}}>
+                            <span>{todayBadge(today)}</span>
                             <span className="p-1">{diffBadge(today, yesterday)}</span>
                         </div>
 

@@ -12,7 +12,10 @@ export const Codes = {
   // "$SP02": "Enhanced Autopilot",
   // "$SP03": "Full Self-Driving Capability",
   // "$STUD": "All Season Tires",
-  "$MT358": "Model 3 Rear-Wheel Drive"
+  "$MT358": {
+    "vehicleGrade": "Model 3 Rear-Wheel Drive",
+    "capacityKwh": 60.0,
+  }
 }
 
 export const REFRESH_EARLY_MS = 10 * 60 * 1000;
