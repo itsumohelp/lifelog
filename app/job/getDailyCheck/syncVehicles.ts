@@ -1,6 +1,8 @@
 import {prisma} from "@/prisma";
-import {fetchVehicles, fetchVehicleData} from "@/app/job/getDailyCheck/api";
+import {fetchVehicles, fetchVehicleData, fetchOptions} from "@/app/job/getDailyCheck/api";
 import {milesToKm, rangeToKm} from "@/app/lib/utility";
+import {Codes} from "@/app/static/Codes";
+import {deriveAndUpdateDailySnapshot} from "@/app/lib/deriveDailyMetrics";
 
 function startOfJstDay(date = new Date()) {
   // JSTで日次にしたい前提：DBはUTC保存でOK、境界をJSTで切る
@@ -16,30 +18,79 @@ export async function syncVehiclesAndDailySnapshot(params: {
   accessToken: string;
 }) {
   const {teslaAccountId, accessToken} = params;
-  const vehicles = await fetchVehicles(accessToken);
+
+  // check to vhicles from marsflare db
+  // const vehicles = await fetchVehicles(accessToken);
 
   // 2) TeslaVehicleへ upsert（車両マスタ）
-  for (const v of vehicles) {
-    const teslaVehicleId = BigInt(v.id);
 
-    await prisma.teslaVehicle.upsert({
-      where: {teslaVehicleId}, // あなたのschemaに合わせてユニークキーを調整してください
-      update: {
-        teslaAccountId,
-        displayName: v.display_name ?? null,
-        state: v.state ?? null,
-        accessType: v.access_type ?? null,
-        rawJson: v as any,
-      },
-      create: {
-        teslaAccountId,
-        teslaVehicleId,
-        displayName: v.display_name ?? null,
-        state: v.state ?? null,
-        accessType: v.access_type ?? null,
-        rawJson: v as any,
-      },
-    });
+  const vehicles = await prisma.teslaVehicle.findMany({
+    where: {teslaAccountId},
+  });
+
+  for (const v of vehicles) {
+    const teslaVehicleId = BigInt(v.teslaVehicleId);
+
+    // const vehicleRes = await prisma.teslaVehicle.upsert({
+    //   where: {teslaVehicleId}, // あなたのschemaに合わせてユニークキーを調整してください
+    //   update: {
+    //     teslaAccountId,
+    //     displayName: v.display_name ?? null,
+    //     state: v.state ?? null,
+    //     accessType: v.access_type ?? null,
+    //     rawJson: v as any,
+    //   },
+    //   create: {
+    //     teslaAccountId,
+    //     teslaVehicleId,
+    //     displayName: v.display_name ?? null,
+    //     state: v.state ?? null,
+    //     accessType: v.access_type ?? null,
+    //     rawJson: v as any,
+    //   },
+    // });
+
+    // // vehicle options 取得・保存
+    // const request = await fetchOptions(accessToken, v?.vin ?? "", teslaAccountId, teslaVehicleId);
+    // const options: {code: string}[] = request?.codes ?? [];
+
+    // console.log("this is check + " + JSON.stringify(request));
+    // if (request.length === 0) {
+    //   return;
+    // }
+
+    // options.map(async (s) => {
+    //   const vehicleKind = s.code
+
+    //   const codeKey = s.code as keyof typeof Codes;
+    //   const checkCodes = Codes[codeKey];
+    //   if (checkCodes) {
+    //     await prisma.teslaVehicle.update({
+    //       where: {teslaVehicleId},
+    //       data: {
+    //         vehicleGrade: checkCodes["grade"] || null,
+    //         capacityKwh: checkCodes["batteryCapacity"] || null,
+    //       },
+    //     });
+    //   }
+
+    //   return prisma.vehicleOptions.upsert({
+    //     where: {
+    //       vehicleId_code: {
+    //         vehicleId: vehicleRes.id,
+    //         code: vehicleKind,
+    //       },
+    //     },
+    //     update: {
+    //       code: vehicleKind
+    //     },
+    //     create: {
+    //       vehicleId: v.id.toString(),
+    //       code: vehicleKind
+    //     },
+    //   });
+    // })
+
     const snapshotDate = startOfJstDay(new Date());
     const vd = await fetchVehicleData(accessToken, teslaVehicleId, teslaAccountId);
 
@@ -68,7 +119,7 @@ export async function syncVehiclesAndDailySnapshot(params: {
       continue;
     }
 
-    const data = vd.data;
+    const data = vd.data || {};
 
     const batteryLevel = data.charge_state?.battery_level ?? null;
     const chargeLimitSoc = data.charge_state?.charge_limit_soc ?? null;
@@ -118,5 +169,43 @@ export async function syncVehiclesAndDailySnapshot(params: {
         status: true,
       },
     });
+
+    upsertDailySnapshotAndDerive({
+      teslaAccountId,
+      teslaVehicleId,
+      snapshotDate,
+      batteryLevel,
+      chargeLimitSoc,
+      odometerKm,
+      batteryRangeKm,
+      estBatteryRangeKm,
+      outsideTemp,
+      insideTemp,
+      chargeEnergyAdded,
+    });
   }
+}
+
+export async function upsertDailySnapshotAndDerive(data: {
+  teslaAccountId: string;
+  teslaVehicleId: bigint;
+  snapshotDate: Date;
+  batteryLevel?: number | null;
+  chargeLimitSoc?: number | null;
+  odometerKm?: number | null;
+  batteryRangeKm?: number | null;
+  estBatteryRangeKm?: number | null;
+  outsideTemp?: number | null;
+  insideTemp?: number | null;
+  chargeEnergyAdded?: number | null;
+}) {
+  const {teslaAccountId, teslaVehicleId, snapshotDate, ...rest} = data;
+
+  await prisma.teslaVehicleDailySnapshot.upsert({
+    where: {uniq_daily_snapshot: {teslaAccountId, teslaVehicleId, snapshotDate}},
+    create: {teslaAccountId, teslaVehicleId, snapshotDate, ...rest},
+    update: {...rest, fetchedAt: new Date()},
+  });
+
+  await deriveAndUpdateDailySnapshot({teslaAccountId, teslaVehicleId, snapshotDate});
 }

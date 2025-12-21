@@ -5,6 +5,7 @@ import {PrismaClient} from "@prisma/client";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
 import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
+import {Codes} from "@/app/static/Codes";
 
 const prisma = new PrismaClient();
 
@@ -134,28 +135,38 @@ export async function POST() {
       return;
     }
 
-    const optionResults = await prisma.$transaction(
-      options.map((s) => {
+    const vehicleId = results.find(r => r.teslaVehicleId === BigInt(v.id))!.id;
 
-        const vehicleId = results.find(r => r.teslaVehicleId === BigInt(v.id))!.id;
-        const vehicleKind = s.code
-        return prisma.vehicleOptions.upsert({
-          where: {
-            vehicleId_code: {
-              vehicleId: vehicleId,
-              code: vehicleKind,
-            },
-          },
-          update: {
-            code: vehicleKind
-          },
-          create: {
-            vehicleId: vehicleId,
-            code: vehicleKind
+    options.map(async (s) => {
+      const vehicleKind = s.code
+
+      const codeKey = s.code as keyof typeof Codes;
+      const checkCodes = Codes[codeKey];
+      if (checkCodes) {
+        await prisma.teslaVehicle.update({
+          where: {id: vehicleId},
+          data: {
+            vehicleGrade: checkCodes["vehicleGrade"] || null,
+            capacityKwh: checkCodes["capacityKwh"] || null,
           },
         });
-      })
-    );
+      }
+      return prisma.vehicleOptions.upsert({
+        where: {
+          vehicleId_code: {
+            vehicleId: vehicleId,
+            code: vehicleKind,
+          },
+        },
+        update: {
+          code: vehicleKind
+        },
+        create: {
+          vehicleId: v.id.toString(),
+          code: vehicleKind
+        },
+      });
+    })
   });
 
 

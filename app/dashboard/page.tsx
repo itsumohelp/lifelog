@@ -7,6 +7,7 @@ import SyncVehiclesButton from "./sync-vehicles-button";
 import SyncDailyButton from "./sync-daily-button";
 import VehicleCards, {Vehicle} from "./vehicle-cards";
 import BatteryRangeChart from "./BatteryRangeChart";
+import Card from "./Card";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -98,6 +99,8 @@ export default async function DashboardPage() {
         batteryRangeKm: r.batteryRangeKm ?? null,
         estBatteryRangeKm: r.estBatteryRangeKm ?? null,
     }));
+    const snapshotDays = 37; // DBから集計した値に置き換え
+    const lastDate = "2025-12-21";
 
     return (
         <main style={{padding: "3px 10px 0px 10px", display: "grid", gap: 16}}>
@@ -130,6 +133,7 @@ export default async function DashboardPage() {
                 <SyncDailyButton />
             </section>
             <a href="/dashboard/api-log" target="_blank" rel="noreferrer">APIログを見る</a> <a href="/setting/tesla" target="_blank" rel="noreferrer">設定を見る</a>
+            <Card />
 
         </main>
     );
