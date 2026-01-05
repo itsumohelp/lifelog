@@ -96,8 +96,9 @@ export default async function DashboardPage() {
     const chartData = rows.map((r) => ({
         date: r.snapshotDate.toISOString().slice(0, 10), // "YYYY-MM-DD"
         batteryLevel: r.batteryLevel ?? null,
-        batteryRangeKm: r.batteryRangeKm ?? null,
-        estBatteryRangeKm: r.estBatteryRangeKm ?? null,
+        batteryRangeKm: r.batteryRangeKm != null ? Math.round(r.batteryRangeKm) : null,
+        dailyDistanceKm: r.odometerDeltaKm != null ? Math.round(r.odometerDeltaKm) : null,
+        outsideTemp: r.outsideTemp ?? null,
     }));
     const snapshotDays = 37; // DBから集計した値に置き換え
     const lastDate = "2025-12-21";
@@ -133,8 +134,6 @@ export default async function DashboardPage() {
                 <SyncDailyButton />
             </section>
             <a href="/dashboard/api-log" target="_blank" rel="noreferrer">APIログを見る</a> <a href="/setting/tesla" target="_blank" rel="noreferrer">設定を見る</a>
-            <Card />
-
         </main>
     );
 }
