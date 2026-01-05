@@ -1,6 +1,6 @@
 import React from "react";
 import {OdometerHero} from "./OdometerHero";
-import {Codes} from "../static/Codes";
+import BatteryGauge from "./BatteryGauge";
 
 export type Vehicle = {
     id: string;
@@ -52,98 +52,10 @@ export function badge(text: string, bg: string, fg: string) {
     );
 }
 
-function todayBadge(s?: Snapshot) {
-    if (!s) return badge("今日: 未取得", "#fff7ed", "#9a3412");
-    if (s.status === true && typeof s.batteryLevel === "number") {
-        const limit = typeof s.chargeLimitSoc === "number" ? ` / 充電上限 ${s.chargeLimitSoc}%` : "";
-        return badge(`電池残量 ${s.batteryLevel}%${limit}`, "#ecfeff", "#0e7490");
-    }
-    if (s.status === false) return badge("今日: 取得失敗(スリープ)", "#fff7ed", "#9a3412");
-    return badge("今日: 取得失敗", "#fef2f2", "#991b1b");
-}
-
-function diffBadge(today?: Snapshot, yesterday?: Snapshot) {
-    if (!today || !yesterday) return badge("前日差: -", "#f3f4f6", "#374151");
-
-    if (today.status !== true || yesterday.status !== true) {
-        return badge("前日差: 欠測", "#fff7ed", "#9a3412");
-    }
-
-    const tSoc = today.batteryLevel;
-    const ySoc = yesterday.batteryLevel;
-
-    if (typeof tSoc !== "number" || typeof ySoc !== "number") {
-        return badge("前日差: 欠測", "#fff7ed", "#9a3412");
-    }
-
-    const delta = tSoc - ySoc;
-    const sign = delta > 0 ? "+" : "";
-    const text = `前日から電池残量 ${sign}${delta}%`;
-
-    const tLimit = today.chargeLimitSoc;
-    const yLimit = yesterday.chargeLimitSoc;
-    let limitText = "";
-    if (typeof tLimit === "number" && typeof yLimit === "number" && tLimit !== yLimit) {
-        const d = tLimit - yLimit;
-        const s = d > 0 ? "+" : "";
-        limitText = ` / 上限${s}${d}%`;
-    }
-
-    if (delta > 0) return badge(`${text}${limitText}`, "#e7f7ee", "#117a37");
-    if (delta < 0) return badge(`${text}${limitText}`, "#fef2f2", "#991b1b");
-    return badge(`${text}${limitText}`, "#f3f4f6", "#374151");
-}
-
-function fmtNum(n: number | null | undefined, digits = 0): string {
-    if (typeof n !== "number" || Number.isNaN(n)) return "-";
-    return n.toFixed(digits);
-}
-
 function fmtTempC(n: number | null | undefined): string {
     if (typeof n !== "number" || Number.isNaN(n)) return "-";
     // 0.5刻みなどがあるので1桁表示が見やすい
     return `${n.toFixed(1)}℃`;
-}
-
-function fmtKm(n: number | null | undefined): string {
-    if (typeof n !== "number" || Number.isNaN(n)) return "-";
-    return `${Math.round(n)} km`;
-}
-
-function rangeLine(today?: Snapshot) {
-    if (!today || today.status !== true) return "レンジ: -";
-    const rated = fmtKm(today.batteryRangeKm);
-    const est = fmtKm(today.estBatteryRangeKm);
-    return `レンジ: 定格 ${rated} / 推定 ${est}`;
-}
-
-function tempLine(today?: Snapshot) {
-    if (!today || today.status !== true) return "気温: -";
-    const out = fmtTempC(today.outsideTemp);
-    const ins = fmtTempC(today.insideTemp);
-    // inside が取れない車/状態もあるので、取れてる時だけ出す
-    return today.insideTemp != null
-        ? `気温: 外 ${out} / 車内 ${ins}`
-        : `気温: 外 ${out}`;
-}
-
-function rangeDiffText(today?: Snapshot, yesterday?: Snapshot, estimated = false) {
-    if (!today || !yesterday) return "レンジ差: -";
-    if (today.status !== true || yesterday.status !== true) return "レンジ差: 欠測";
-
-    let tR, yR;
-    if (estimated) {
-        tR = today.estBatteryRangeKm;
-        yR = yesterday.estBatteryRangeKm;
-    } else {
-        tR = today.batteryRangeKm;
-        yR = yesterday.batteryRangeKm;
-    }
-
-    const fmt = (d: number) => `${d > 0 ? "+" : ""}${Math.round(d)}km`;
-    const rated = typeof tR === "number" && typeof yR === "number" ? fmt(tR - yR) : "欠測";
-
-    return `${rated}`;
 }
 
 function tempDiffText(today?: Snapshot, yesterday?: Snapshot) {
@@ -192,102 +104,196 @@ export default function VehicleCards({
                         }}
                     >
 
-                        <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
+                        <div style={{display: "flex", justifyContent: "center"}}>
                             <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.vehicleGrade ?? null} />
-                            {/* <div style={{minWidth: 0}}>
-                                <div
-                                    style={{
+                        </div>
+                        {/* バッテリーゲージ + 走行可能距離 */}
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 12,
+                            margin: "0 5px",
+                            alignItems: "center",
+                        }}>
+                            {/* 左半分：バッテリーゲージ */}
+                            <div>
+                                <BatteryGauge
+                                    batteryLevel={today?.batteryLevel ?? null}
+                                    chargeLimitSoc={today?.chargeLimitSoc ?? null}
+                                    yesterdayLevel={yesterday?.batteryLevel ?? null}
+                                />
+                            </div>
+
+                            {/* 右半分：走行可能距離 */}
+                            <div style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "8px 0",
+                            }}>
+                                {/* タイトル */}
+                                <div style={{
+                                    fontSize: 12,
+                                    color: "#6b7280",
+                                    marginBottom: 4,
+                                }}>
+                                    走行可能距離
+                                </div>
+                                {today?.status === true ? (
+                                    <>
+                                        {/* メイン：残量から算出 + 前日比 横並び */}
+                                        <div style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 8,
+                                            flexWrap: "wrap",
+                                            justifyContent: "center",
+                                        }}>
+                                            <svg
+                                                width="28"
+                                                height="28"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#374151"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                style={{ flexShrink: 0 }}
+                                            >
+                                                <path d="M5 17h14v-4a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v4z" />
+                                                <circle cx="7.5" cy="17" r="1.5" />
+                                                <circle cx="16.5" cy="17" r="1.5" />
+                                                <path d="M5 13l-1-2h16l-1 2" />
+                                            </svg>
+                                            <span style={{
+                                                fontSize: 22,
+                                                fontWeight: 700,
+                                                color: "#111827",
+                                            }}>
+                                                {Math.round(today.batteryRangeKm ?? 0)} km
+                                            </span>
+                                            <span style={{
+                                                fontSize: 14,
+                                                color: (() => {
+                                                    if (yesterday?.status !== true || typeof yesterday.batteryRangeKm !== "number") return "#6b7280";
+                                                    const diff = (today.batteryRangeKm ?? 0) - yesterday.batteryRangeKm;
+                                                    return diff > 0 ? "#16a34a" : diff < 0 ? "#dc2626" : "#6b7280";
+                                                })(),
+                                            }}>
+                                                {(() => {
+                                                    if (yesterday?.status !== true || typeof yesterday.batteryRangeKm !== "number") {
+                                                        return "(欠測)";
+                                                    }
+                                                    const diff = Math.round((today.batteryRangeKm ?? 0) - yesterday.batteryRangeKm);
+                                                    const sign = diff > 0 ? "+" : "";
+                                                    return `(${sign}${diff} km)`;
+                                                })()}
+                                            </span>
+                                        </div>
+                                        {/* サブ：実績値 */}
+                                        <div style={{
+                                            fontSize: 12,
+                                            color: "#9ca3af",
+                                            marginTop: 4,
+                                        }}>
+                                            実績値: {Math.round(today.estBatteryRangeKm ?? 0)} km
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div style={{
                                         fontSize: 16,
-                                        fontWeight: 700,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {v.displayName ?? "Tesla"}
-                                </div>
-                            </div> */}
-                        </div>
-                        <div style={{margin: " -8px 0px -5px 5px"}}>
-                            <span>{todayBadge(today)}</span>
-                            <span className="p-1">{diffBadge(today, yesterday)}</span>
+                                        color: "#9ca3af",
+                                    }}>
+                                        データなし
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Metrics */}
-                        <div style={{display: "grid", gap: 6, fontSize: 13, color: "#111827"}}>
-
-
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>最終データ取得日</span>
-                                <span>{new Date(v.lastSeenAt).toLocaleString('ja-JP', {timeZone: 'Asia/Tokyo'})}</span>
-                            </div>
-
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>今日の電費</span>
-                                <span>
-                                    {today?.odometerKm != null &&
-                                        yesterday?.odometerKm != null &&
-                                        today.batteryLevel != null &&
-                                        yesterday.batteryLevel != null
-                                        ? Math.trunc(
-                                            (today.odometerKm - yesterday.odometerKm) /
-                                            ((yesterday.batteryLevel - today.batteryLevel) / 100 * 60)
-                                        )
-                                        : "-"}{" "}
-                                    km/kWh
-                                </span>
-                            </div>
-
-                            {/* 追加：レンジ */}
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>走行可能距離(残量から算出)</span>
-                                <span style={{textAlign: "right"}}>
-                                    {today?.status === true
-                                        ? `${fmtKm(today.batteryRangeKm)}`
-                                        : "-"}
-                                    ({rangeDiffText(today, yesterday)})
-                                </span>
-                            </div>
-
-                            {/* 追加：レンジ */}
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>走行可能距離(実績値)</span>
-                                <span style={{textAlign: "right"}}>
-                                    {today?.status === true
-                                        ? `${fmtKm(today.estBatteryRangeKm)}`
-                                        : "-"}
-                                    ({rangeDiffText(today, yesterday, true)})
-                                </span>
-                            </div>
-
-
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>車外気温</span>
-                                <span style={{textAlign: "right"}}>
-                                    {today?.status === true
-                                        ? `${fmtTempC(today.outsideTemp)}`
-                                        : "-"}
-                                    ({tempDiffText(today, yesterday)})
-                                </span>
-                            </div>
-
-                            {/* 追加：気温 */}
-                            <div style={{display: "flex", justifyContent: "space-between", gap: 8}}>
-                                <span style={{color: "#6b7280"}}>車内気温</span>
-                                <span style={{textAlign: "right"}}>
-                                    {today?.status === true
-                                        ? `${fmtTempC(today.insideTemp)}`
+                        {/* Metrics - 4項目を横並びテーブル形式 */}
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4, 1fr)",
+                            gap: 8,
+                            fontSize: 14,
+                            color: "#111827",
+                            textAlign: "center",
+                            borderTop: "1px solid #e5e7eb",
+                            paddingTop: 8,
+                            marginTop: 2,
+                        }}>
+                            {/* 最終データ取得日 */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                <span style={{ color: "#6b7280", fontSize: 11 }}>最終取得</span>
+                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                    {today?.fetchedAt
+                                        ? new Date(today.fetchedAt).toLocaleString('ja-JP', {
+                                            timeZone: 'Asia/Tokyo',
+                                            month: 'numeric',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })
                                         : "-"}
                                 </span>
                             </div>
 
+                            {/* 今日の電費 */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                <span style={{ color: "#6b7280", fontSize: 11 }}>電費</span>
+                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                    {(() => {
+                                        if (!yesterday || yesterday.status !== true) return "欠測";
+                                        if (today?.odometerKm != null &&
+                                            yesterday?.odometerKm != null &&
+                                            today.batteryLevel != null &&
+                                            yesterday.batteryLevel != null &&
+                                            (yesterday.batteryLevel - today.batteryLevel) > 0) {
+                                            return `${Math.trunc(
+                                                (today.odometerKm - yesterday.odometerKm) /
+                                                ((yesterday.batteryLevel - today.batteryLevel) / 100 * 60)
+                                            )} km/kWh`;
+                                        }
+                                        return "-";
+                                    })()}
+                                </span>
+                            </div>
 
-                            {today && today.status !== true && today.errorStatus ? (
-                                <div style={{fontSize: 12, color: "#9a3412"}}>
-                                    error: {today.errorStatus} {today.errorMessage ?? ""}
-                                </div>
-                            ) : null}
+                            {/* 車外気温 */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                <span style={{ color: "#6b7280", fontSize: 11 }}>車外気温</span>
+                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                    {today?.status === true ? fmtTempC(today.outsideTemp) : "-"}
+                                    <span style={{
+                                        fontSize: 11,
+                                        color: (() => {
+                                            if (!today || !yesterday || today.status !== true || yesterday.status !== true) return "#6b7280";
+                                            const t = today.outsideTemp, y = yesterday.outsideTemp;
+                                            if (typeof t !== "number" || typeof y !== "number") return "#6b7280";
+                                            return (t - y) > 0 ? "#dc2626" : (t - y) < 0 ? "#2563eb" : "#6b7280";
+                                        })(),
+                                    }}>
+                                        {" "}({tempDiffText(today, yesterday)})
+                                    </span>
+                                </span>
+                            </div>
+
+                            {/* 車内気温 */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                <span style={{ color: "#6b7280", fontSize: 11 }}>車内気温</span>
+                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                    {today?.status === true ? fmtTempC(today.insideTemp) : "-"}
+                                </span>
+                            </div>
                         </div>
+
+                        {/* エラー表示 */}
+                        {today && today.status !== true && today.errorStatus ? (
+                            <div style={{fontSize: 12, color: "#9a3412"}}>
+                                error: {today.errorStatus} {today.errorMessage ?? ""}
+                            </div>
+                        ) : null}
                     </div>
                 );
             })}

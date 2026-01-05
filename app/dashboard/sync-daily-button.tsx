@@ -19,7 +19,8 @@ export default function SyncDailyButton() {
 
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
-                setResult(`NG: ${res.status} ${JSON.stringify(json)}`);
+                console.error("Sync daily failed", json);
+                setResult(`NG: ${res.status} ${json.message ?? "エラーが発生しました"}`);
                 return;
             }
             setResult(
