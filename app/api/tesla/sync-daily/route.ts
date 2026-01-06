@@ -161,7 +161,7 @@ export async function POST() {
     return NextResponse.json({ok: false, error: "missing access token"}, {status: 401});
   }
 
-  syncVehiclesAndDailySnapshot({teslaAccountId: account.id, accessToken: accessToken});
+  const results = await syncVehiclesAndDailySnapshot({teslaAccountId: account.id, accessToken: accessToken});
 
   const snapshotDate = getJstDayKey(new Date());
 
@@ -174,5 +174,6 @@ export async function POST() {
     snapshotDateIso: snapshotDate.toISOString(),
     vehicles: account.vehicles.length,
     savedCount,
+    results,
   });
 }

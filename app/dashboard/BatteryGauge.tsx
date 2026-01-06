@@ -28,8 +28,8 @@ export default function BatteryGauge({ batteryLevel, chargeLimitSoc, yesterdayLe
     const color = getColor(level);
 
     // 円グラフ用のSVG計算
-    const size = 72;
-    const strokeWidth = 7;
+    const size = 60;
+    const strokeWidth = 6;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const levelOffset = circumference - (level / 100) * circumference;
@@ -113,24 +113,6 @@ export default function BatteryGauge({ batteryLevel, chargeLimitSoc, yesterdayLe
                         style={{ transition: "stroke-dashoffset 0.3s ease" }}
                     />
                 </svg>
-                {/* 中央のパーセント表示 */}
-                <div
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        fontWeight: 700,
-                        color: "#111827",
-                    }}
-                >
-                    {level}%
-                </div>
             </div>
 
             {/* 右側の数値情報 */}

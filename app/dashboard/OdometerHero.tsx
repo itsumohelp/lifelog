@@ -6,13 +6,14 @@ type Props = {
     odometerKm: number | null;
     deltaKm: number | null;
     vehicleGrade: string | null;
+    hideVehicleTag?: boolean;
 };
 
 function formatKm(n: number) {
     return n.toLocaleString("ja-JP", {maximumFractionDigits: 0});
 }
 
-export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicleGrade}: Props) {
+export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicleGrade, hideVehicleTag = false}: Props) {
     const isMissing = odometerKm == null;
 
     const sign =
@@ -23,7 +24,7 @@ export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicleGrade}: Pro
         <section className="rounded-2xl bg-gradient-to-b from-slate-50 to-white" style={{ width: "100%", paddingBottom: 4 }}>
             <div>
                 <span key="vehicleId" className="flex items-center gap-2">
-                    {badge(vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}<span style={{fontSize: "12px", color: "#6b7280", padding: "0 2px 0 0"}}>{vehicleId}</span>
+                    {badge(vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}{!hideVehicleTag && <span style={{fontSize: "12px", color: "#6b7280", padding: "0 2px 0 0"}}>{vehicleId}</span>}
                 </span>
             </div>
 

@@ -1,13 +1,8 @@
-import {cookies} from "next/headers";
-import {getIronSession} from "iron-session";
+import {notFound} from "next/navigation";
 
 import {prisma} from "@/prisma";
-import {sessionOptions, type SessionData} from "@/app/lib/session";
-import SyncVehiclesButton from "./sync-vehicles-button";
-import SyncDailyButton from "./sync-daily-button";
-import VehicleCards, {Vehicle} from "./vehicle-cards";
-import BatteryRangeChart from "./BatteryRangeChart";
-import Card from "./Card";
+import VehicleCards, {Vehicle} from "@/app/dashboard/vehicle-cards";
+import BatteryRangeChart from "@/app/dashboard/BatteryRangeChart";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -23,21 +18,16 @@ function addDays(date: Date, days: number): Date {
     return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
-export default async function DashboardPage() {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-    const teslaSub = session.teslaSub;
+type Props = {
+    params: Promise<{id: string}>;
+};
 
-    if (!teslaSub) {
-        return (
-            <main style={{padding: 16}}>
-                <p>未ログインです。先に Tesla ログインしてください。</p>
-            </main>
-        );
-    }
+export default async function PublicDashboardPage({params}: Props) {
+    const {id} = await params;
 
-    // ログイン中ユーザーの TeslaAccount を取得（車両も一緒に）
+    // アカウントIDで検索（公開ダッシュボード用）
     const account = await prisma.teslaAccount.findUnique({
-        where: {teslaSub},
+        where: {id},
         include: {
             vehicles: {
                 orderBy: {lastSeenAt: "desc"},
@@ -51,11 +41,7 @@ export default async function DashboardPage() {
     });
 
     if (!account) {
-        return (
-            <main style={{padding: 16}}>
-                <p>Teslaアカウントが見つかりません。</p>
-            </main>
-        );
+        notFound();
     }
 
     const vehicles: Vehicle[] = account.vehicles ?? [];
@@ -73,35 +59,33 @@ export default async function DashboardPage() {
         }),
     ]);
 
-    // BigInt -> string key の map（Server Componentでも安全な形に）
+    // BigInt -> string key の map
     const todayMap = Object.fromEntries(
-        todaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
+        todaySnapshots.map((s: {teslaVehicleId: {toString: () => any}}) => [s.teslaVehicleId.toString(), s])
     );
     const yesterdayMap = Object.fromEntries(
-        yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any;};}) => [s.teslaVehicleId.toString(), s])
+        yesterdaySnapshots.map((s: {teslaVehicleId: {toString: () => any}}) => [s.teslaVehicleId.toString(), s])
     );
 
     const days = 30; // 直近30日
     const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const rows = await prisma.teslaVehicleDailySnapshot.findMany({
+    const rows = vehicles.length > 0 ? await prisma.teslaVehicleDailySnapshot.findMany({
         where: {
             teslaAccountId: account.id,
             teslaVehicleId: vehicles[0].teslaVehicleId,
             snapshotDate: {gte: from},
         },
         orderBy: {snapshotDate: "asc"},
-    });
+    }) : [];
 
     const chartData = rows.map((r) => ({
-        date: r.snapshotDate.toISOString().slice(0, 10), // "YYYY-MM-DD"
+        date: r.snapshotDate.toISOString().slice(0, 10),
         batteryLevel: r.batteryLevel ?? null,
         batteryRangeKm: r.batteryRangeKm != null ? Math.round(r.batteryRangeKm) : null,
         dailyDistanceKm: r.odometerDeltaKm != null ? Math.round(r.odometerDeltaKm) : null,
         outsideTemp: r.outsideTemp ?? null,
     }));
-    const snapshotDays = 37; // DBから集計した値に置き換え
-    const lastDate = "2025-12-21";
 
     return (
         <main style={{padding: "3px 10px 0px 10px", display: "grid", gap: 16}}>
@@ -109,21 +93,16 @@ export default async function DashboardPage() {
                 vehicles={vehicles as any}
                 todayMap={todayMap as any}
                 yesterdayMap={yesterdayMap as any}
+                hideVehicleTag={true}
             />
             <section style={{display: "grid", gap: 8}}>
                 <b>電池残量 / 走行可能距離</b>
 
                 {vehicles.length === 0 ? (
-                    <p>車両がありません。上の「車両同期」を押してください。</p>
+                    <p>車両データがありません。</p>
                 ) : (
-                    <>
-                        <BatteryRangeChart data={chartData} />
-                    </>
+                    <BatteryRangeChart data={chartData} />
                 )}
-            </section>
-            <section style={{display: "flex", gap: 12, flexWrap: "wrap", paddingBottom: 20}}>
-                <SyncVehiclesButton />
-                <SyncDailyButton alreadyFetchedToday={todaySnapshots.some((s: any) => s.status === true)} />
             </section>
         </main>
     );

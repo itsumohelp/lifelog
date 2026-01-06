@@ -13,10 +13,17 @@ function startOfJstDay(date = new Date()) {
   return new Date(jst.getTime() - 9 * 60 * 60 * 1000);
 }
 
+export type SyncResult = {
+  teslaVehicleId: string;
+  displayName: string | null;
+  status: "ok" | "timeout" | "error";
+  errorMessage?: string;
+};
+
 export async function syncVehiclesAndDailySnapshot(params: {
   teslaAccountId: string;
   accessToken: string;
-}) {
+}): Promise<SyncResult[]> {
   const {teslaAccountId, accessToken} = params;
 
   // check to vhicles from marsflare db
@@ -27,6 +34,8 @@ export async function syncVehiclesAndDailySnapshot(params: {
   const vehicles = await prisma.teslaVehicle.findMany({
     where: {teslaAccountId},
   });
+
+  const results: SyncResult[] = [];
 
   for (const v of vehicles) {
     const teslaVehicleId = BigInt(v.teslaVehicleId);
@@ -116,6 +125,12 @@ export async function syncVehiclesAndDailySnapshot(params: {
         },
       });
 
+      results.push({
+        teslaVehicleId: teslaVehicleId.toString(),
+        displayName: v.displayName,
+        status: "timeout",
+      });
+
       continue;
     }
 
@@ -183,7 +198,15 @@ export async function syncVehiclesAndDailySnapshot(params: {
       insideTemp,
       chargeEnergyAdded,
     });
+
+    results.push({
+      teslaVehicleId: teslaVehicleId.toString(),
+      displayName: v.displayName,
+      status: "ok",
+    });
   }
+
+  return results;
 }
 
 export async function upsertDailySnapshotAndDerive(data: {

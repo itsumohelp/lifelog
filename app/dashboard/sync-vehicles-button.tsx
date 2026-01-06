@@ -35,7 +35,7 @@ export default function SyncVehiclesButton() {
     }
 
     return (
-        <div style={{display: "grid", gap: 8, maxWidth: 420}}>
+        <div style={{display: "grid", gap: 8}}>
             <button
                 onClick={onSync}
                 disabled={loading}
@@ -46,7 +46,7 @@ export default function SyncVehiclesButton() {
                     cursor: loading ? "not-allowed" : "pointer",
                 }}
             >
-                {loading ? "同期中..." : "車両を同期（POST）"}
+                {loading ? "取得中..." : "車両情報を再取得"}
             </button>
 
             {result && (
