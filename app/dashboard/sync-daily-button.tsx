@@ -1,14 +1,31 @@
 "use client";
 
 import {useState} from "react";
+import {useRouter} from "next/navigation";
 
-export default function SyncDailyButton() {
+type SyncResultItem = {
+    teslaVehicleId: string;
+    displayName: string | null;
+    status: "ok" | "timeout" | "error";
+    errorMessage?: string;
+};
+
+type Props = {
+    alreadyFetchedToday?: boolean;
+};
+
+export default function SyncDailyButton({alreadyFetchedToday = false}: Props) {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<string>("");
+    const [fetched, setFetched] = useState(alreadyFetchedToday);
+    const [feedback, setFeedback] = useState<{
+        type: "success" | "warning" | "error";
+        message: string;
+    } | null>(null);
 
     async function onSync() {
         setLoading(true);
-        setResult("");
+        setFeedback(null);
 
         try {
             const res = await fetch("/api/tesla/sync-daily", {
@@ -20,40 +37,77 @@ export default function SyncDailyButton() {
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
                 console.error("Sync daily failed", json);
-                setResult(`NG: ${res.status} ${json.message ?? "エラーが発生しました"}`);
+                setFeedback({
+                    type: "error",
+                    message: `エラーが発生しました: ${json.message ?? res.status}`,
+                });
                 return;
             }
-            setResult(
-                `OK: snapshot=${json.snapshotDateIso}\n` +
-                `vehiclesInAccount=${json.vehiclesInAccount} savedCount=${json.savedCount}\n` +
-                `results=${JSON.stringify(json.results, null, 2)}`
-            );
+
+            const results: SyncResultItem[] = json.results ?? [];
+            const timeoutCount = results.filter(r => r.status === "timeout").length;
+            const okCount = results.filter(r => r.status === "ok").length;
+
+            if (timeoutCount > 0 && okCount === 0) {
+                setFeedback({
+                    type: "warning",
+                    message: "車両がスリープしているため取得できませんでした",
+                });
+            } else if (timeoutCount > 0) {
+                setFeedback({
+                    type: "warning",
+                    message: `${okCount}台のデータを取得しました。${timeoutCount}台はスリープ中のため取得できませんでした`,
+                });
+                router.refresh();
+            } else {
+                setFeedback({
+                    type: "success",
+                    message: `データを取得しました`,
+                });
+                setFetched(true);
+                router.refresh();
+            }
         } catch (e: any) {
-            setResult(`NG: ${e?.message ?? String(e)}`);
+            setFeedback({
+                type: "error",
+                message: `エラーが発生しました: ${e?.message ?? String(e)}`,
+            });
         } finally {
             setLoading(false);
         }
     }
 
+    const isDisabled = loading || fetched;
+
     return (
-        <div style={{display: "grid", gap: 8, maxWidth: 520}}>
+        <div style={{display: "grid", gap: 8}}>
             <button
                 onClick={onSync}
-                disabled={loading}
+                disabled={isDisabled}
                 style={{
                     padding: "10px 12px",
                     borderRadius: 10,
                     border: "1px solid #ccc",
-                    cursor: loading ? "not-allowed" : "pointer",
+                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    background: isDisabled ? "#f3f4f6" : "white",
+                    opacity: fetched ? 0.5 : 1,
                 }}
             >
-                {loading ? "日次スナップショット取得中..." : "日次スナップショット取得（POST）"}
+                {loading ? "取得中..." : fetched ? "取得済み" : "走行データ取得"}
             </button>
 
-            {result && (
-                <pre style={{padding: 12, background: "#f6f6f6", borderRadius: 8}}>
-                    {result}
-                </pre>
+            {feedback && (
+                <div style={{
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    background: feedback.type === "success" ? "#dcfce7" :
+                               feedback.type === "warning" ? "#fef3c7" : "#fee2e2",
+                    color: feedback.type === "success" ? "#166534" :
+                           feedback.type === "warning" ? "#92400e" : "#991b1b",
+                    fontSize: 14,
+                }}>
+                    {feedback.message}
+                </div>
             )}
         </div>
     );

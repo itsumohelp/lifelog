@@ -1,10 +1,22 @@
+import {cookies} from "next/headers";
+import {getIronSession} from "iron-session";
+
 import {prisma} from "@/prisma";
-import {requireTeslaSub} from "@/app/lib/auth-session";
+import {sessionOptions, type SessionData} from "@/app/lib/session";
 import TeslaSettingsForm from "./TeslaSettingsForm";
 import {getTeslaMode} from "./actions";
 
 export default async function TeslaSettingsPage() {
-    const teslaSub = await requireTeslaSub();
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+    const teslaSub = session.teslaSub;
+
+    if (!teslaSub) {
+        return (
+            <main style={{padding: 16}}>
+                <p>未ログインです。先に Tesla ログインしてください。</p>
+            </main>
+        );
+    }
 
     const account = await prisma.teslaAccount.findUnique({
         where: {teslaSub},

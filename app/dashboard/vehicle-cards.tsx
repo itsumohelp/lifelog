@@ -58,24 +58,17 @@ function fmtTempC(n: number | null | undefined): string {
     return `${n.toFixed(1)}℃`;
 }
 
-function tempDiffText(today?: Snapshot, yesterday?: Snapshot) {
-    if (!today || !yesterday) return "-";
-    if (today.status !== true || yesterday.status !== true) return "欠測";
-    const t = today.outsideTemp, y = yesterday.outsideTemp;
-    if (typeof t !== "number" || typeof y !== "number") return "欠測";
-    const d = t - y;
-    return `${d > 0 ? "+" : ""}${d.toFixed(1)}℃`;
-}
-
 
 export default function VehicleCards({
     vehicles,
     todayMap,
     yesterdayMap,
+    hideVehicleTag = false,
 }: {
     vehicles: Vehicle[];
     todayMap: Record<string, Snapshot>;
     yesterdayMap: Record<string, Snapshot>;
+    hideVehicleTag?: boolean;
 }) {
     return (
         <div
@@ -105,7 +98,7 @@ export default function VehicleCards({
                     >
 
                         <div style={{display: "flex", justifyContent: "center"}}>
-                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.vehicleGrade ?? null} />
+                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.vehicleGrade ?? null} hideVehicleTag={hideVehicleTag} />
                         </div>
                         {/* バッテリーゲージ + 走行可能距離 */}
                         <div style={{
@@ -133,48 +126,28 @@ export default function VehicleCards({
                                 padding: "8px 0",
                             }}>
                                 {/* タイトル */}
-                                <div style={{
-                                    fontSize: 12,
-                                    color: "#6b7280",
-                                    marginBottom: 4,
-                                }}>
+                                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
                                     走行可能距離
                                 </div>
                                 {today?.status === true ? (
                                     <>
-                                        {/* メイン：残量から算出 + 前日比 横並び */}
+                                        {/* 数値 + 前日比（1行） */}
                                         <div style={{
                                             display: "flex",
-                                            alignItems: "center",
-                                            gap: 8,
-                                            flexWrap: "wrap",
-                                            justifyContent: "center",
+                                            alignItems: "baseline",
+                                            gap: 4,
+                                            whiteSpace: "nowrap",
                                         }}>
-                                            <svg
-                                                width="28"
-                                                height="28"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="#374151"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                style={{ flexShrink: 0 }}
-                                            >
-                                                <path d="M5 17h14v-4a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v4z" />
-                                                <circle cx="7.5" cy="17" r="1.5" />
-                                                <circle cx="16.5" cy="17" r="1.5" />
-                                                <path d="M5 13l-1-2h16l-1 2" />
-                                            </svg>
                                             <span style={{
-                                                fontSize: 22,
+                                                fontSize: 20,
                                                 fontWeight: 700,
                                                 color: "#111827",
                                             }}>
-                                                {Math.round(today.batteryRangeKm ?? 0)} km
+                                                {Math.round(today.batteryRangeKm ?? 0)}
                                             </span>
+                                            <span style={{ fontSize: 14, color: "#111827" }}>km</span>
                                             <span style={{
-                                                fontSize: 14,
+                                                fontSize: 13,
                                                 color: (() => {
                                                     if (yesterday?.status !== true || typeof yesterday.batteryRangeKm !== "number") return "#6b7280";
                                                     const diff = (today.batteryRangeKm ?? 0) - yesterday.batteryRangeKm;
@@ -187,11 +160,11 @@ export default function VehicleCards({
                                                     }
                                                     const diff = Math.round((today.batteryRangeKm ?? 0) - yesterday.batteryRangeKm);
                                                     const sign = diff > 0 ? "+" : "";
-                                                    return `(${sign}${diff} km)`;
+                                                    return `(${sign}${diff}km)`;
                                                 })()}
                                             </span>
                                         </div>
-                                        {/* サブ：実績値 */}
+                                        {/* 実績値 */}
                                         <div style={{
                                             fontSize: 12,
                                             color: "#9ca3af",
@@ -211,12 +184,12 @@ export default function VehicleCards({
                             </div>
                         </div>
 
-                        {/* Metrics - 4項目を横並びテーブル形式 */}
+                        {/* Metrics - 4列表示 */}
                         <div style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(4, 1fr)",
-                            gap: 8,
-                            fontSize: 14,
+                            gap: 4,
+                            fontSize: 12,
                             color: "#111827",
                             textAlign: "center",
                             borderTop: "1px solid #e5e7eb",
@@ -224,9 +197,9 @@ export default function VehicleCards({
                             marginTop: 2,
                         }}>
                             {/* 最終データ取得日 */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span style={{ color: "#6b7280", fontSize: 11 }}>最終取得</span>
-                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                <span style={{ fontWeight: 600, fontSize: 13 }}>
                                     {today?.fetchedAt
                                         ? new Date(today.fetchedAt).toLocaleString('ja-JP', {
                                             timeZone: 'Asia/Tokyo',
@@ -240,9 +213,9 @@ export default function VehicleCards({
                             </div>
 
                             {/* 今日の電費 */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span style={{ color: "#6b7280", fontSize: 11 }}>電費</span>
-                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                <span style={{ fontWeight: 600, fontSize: 13 }}>
                                     {(() => {
                                         if (!yesterday || yesterday.status !== true) return "欠測";
                                         if (today?.odometerKm != null &&
@@ -261,28 +234,17 @@ export default function VehicleCards({
                             </div>
 
                             {/* 車外気温 */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span style={{ color: "#6b7280", fontSize: 11 }}>車外気温</span>
-                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                <span style={{ fontWeight: 600, fontSize: 13 }}>
                                     {today?.status === true ? fmtTempC(today.outsideTemp) : "-"}
-                                    <span style={{
-                                        fontSize: 11,
-                                        color: (() => {
-                                            if (!today || !yesterday || today.status !== true || yesterday.status !== true) return "#6b7280";
-                                            const t = today.outsideTemp, y = yesterday.outsideTemp;
-                                            if (typeof t !== "number" || typeof y !== "number") return "#6b7280";
-                                            return (t - y) > 0 ? "#dc2626" : (t - y) < 0 ? "#2563eb" : "#6b7280";
-                                        })(),
-                                    }}>
-                                        {" "}({tempDiffText(today, yesterday)})
-                                    </span>
                                 </span>
                             </div>
 
                             {/* 車内気温 */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                 <span style={{ color: "#6b7280", fontSize: 11 }}>車内気温</span>
-                                <span style={{ fontWeight: 600, fontSize: 14 }}>
+                                <span style={{ fontWeight: 600, fontSize: 13 }}>
                                     {today?.status === true ? fmtTempC(today.insideTemp) : "-"}
                                 </span>
                             </div>
