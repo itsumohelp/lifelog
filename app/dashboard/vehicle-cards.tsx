@@ -2,6 +2,13 @@ import React from "react";
 import {OdometerHero} from "./OdometerHero";
 import BatteryGauge from "./BatteryGauge";
 
+export type VehicleOverride = {
+    displayName: string | null;
+    vehicleGrade: string | null;
+    capacityKwh: number | null;
+    confirmedAt: Date | null;
+};
+
 export type Vehicle = {
     id: string;
     displayName: string | null;
@@ -14,6 +21,7 @@ export type Vehicle = {
     }>;
     vehicleGrade?: string | null;
     capacityKwh?: number | null;
+    override?: VehicleOverride | null;
 };
 
 type Snapshot = {
@@ -98,7 +106,7 @@ export default function VehicleCards({
                     >
 
                         <div style={{display: "flex", justifyContent: "center"}}>
-                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.vehicleGrade ?? null} hideVehicleTag={hideVehicleTag} />
+                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.override?.vehicleGrade ?? v.vehicleGrade ?? null} hideVehicleTag={hideVehicleTag} />
                         </div>
                         {/* バッテリーゲージ + 走行可能距離 */}
                         <div style={{

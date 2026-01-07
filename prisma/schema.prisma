@@ -41,8 +41,21 @@ model TeslaVehicle {
   firstSeenAt        DateTime @default(now())
   lastSeenAt         DateTime @updatedAt
   vehicleOptions VehicleOptions[]
+  override       TeslaVehicleOverride?
   @@unique([teslaAccountId, teslaVehicleId])
   @@unique([teslaAccountId, teslaVehicleIdS])
+}
+
+model TeslaVehicleOverride {
+  id              String       @id @default(cuid())
+  vehicleId       String       @unique
+  teslaVehicle    TeslaVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  displayName     String?
+  vehicleGrade    String?
+  capacityKwh     Float?
+  confirmedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model VehicleOptions {

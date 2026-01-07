@@ -141,15 +141,35 @@ export async function disconnectTesla() {
   const account = await prisma.teslaAccount.findUnique({where: {teslaSub}});
   if (!account) throw new Error("TeslaAccount not found");
 
-  // 例：連携解除＝トークン/設定/車両を消す（必要に応じて調整）
+  // アカウントを物理削除（関連データはonDelete: Cascadeで自動削除される）
+  // 明示的に関連データも削除してからアカウントを削除
   await prisma.$transaction([
+    // 車両に紐づくデータを削除
+    prisma.vehicleOptions.deleteMany({
+      where: {teslaVehicle: {teslaAccountId: account.id}},
+    }),
+    prisma.teslaVehicleOverride.deleteMany({
+      where: {teslaVehicle: {teslaAccountId: account.id}},
+    }),
+    // 日次スナップショットを削除
+    prisma.teslaVehicleDailySnapshot.deleteMany({where: {teslaAccountId: account.id}}),
+    // 車両を削除
+    prisma.teslaVehicle.deleteMany({where: {teslaAccountId: account.id}}),
+    // トークン・設定・ジョブを削除
     prisma.teslaAuthToken.deleteMany({where: {teslaAccountId: account.id}}),
     prisma.teslaSettings.deleteMany({where: {teslaAccountId: account.id}}),
-    prisma.teslaVehicle.deleteMany({where: {teslaAccountId: account.id}}),
-    // account自体を消すかは方針次第：ここでは残す
+    prisma.syncJob.deleteMany({where: {teslaAccountId: account.id}}),
+    // APIログは残す（teslaAccountIdは参照のみ）
+    // 最後にアカウント自体を削除
+    prisma.teslaAccount.delete({where: {id: account.id}}),
   ]);
 
-  revalidatePath("/settings/tesla");
+  // セッションをクリア
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  session.teslaSub = undefined;
+  session.tesla = undefined;
+  await session.save();
+
   return {ok: true as const};
 }
 

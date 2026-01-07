@@ -125,49 +125,53 @@ export async function POST() {
     })
   );
 
-  // vehicle options 取得・保存
-  vehicles.map(async (v) => {
-    const request = await callFleetApi("/api/1/dx/vehicles/options?vin=" + v.vin, accessToken, account.id, undefined, true);
-    const options: any[] = request?.codes ?? [];
+  // vehicle options 取得・保存（複数車両対応）
+  await Promise.all(
+    vehicles.map(async (v) => {
+      const request = await callFleetApi("/api/1/dx/vehicles/options?vin=" + v.vin, accessToken, account.id, undefined, true);
+      const options: any[] = request?.codes ?? [];
 
-    if (request.error) {
-      console.error("Failed to fetch vehicle options for vehicle " + v.id + ": " + JSON.stringify(request.error));
-      return;
-    }
-
-    const vehicleId = results.find(r => r.teslaVehicleId === BigInt(v.id))!.id;
-
-    options.map(async (s) => {
-      const vehicleKind = s.code
-
-      const codeKey = s.code as keyof typeof Codes;
-      const checkCodes = Codes[codeKey];
-      if (checkCodes) {
-        await prisma.teslaVehicle.update({
-          where: {id: vehicleId},
-          data: {
-            vehicleGrade: checkCodes["vehicleGrade"] || null,
-            capacityKwh: checkCodes["capacityKwh"] || null,
-          },
-        });
+      if (request.error) {
+        console.error("Failed to fetch vehicle options for vehicle " + v.id + ": " + JSON.stringify(request.error));
+        return;
       }
-      return prisma.vehicleOptions.upsert({
-        where: {
-          vehicleId_code: {
-            vehicleId: vehicleId,
-            code: vehicleKind,
-          },
-        },
-        update: {
-          code: vehicleKind
-        },
-        create: {
-          vehicleId: v.id.toString(),
-          code: vehicleKind
-        },
-      });
+
+      const vehicleId = results.find(r => r.teslaVehicleId === BigInt(v.id))!.id;
+
+      await Promise.all(
+        options.map(async (s) => {
+          const vehicleKind = s.code;
+
+          const codeKey = s.code as keyof typeof Codes;
+          const checkCodes = Codes[codeKey];
+          if (checkCodes) {
+            await prisma.teslaVehicle.update({
+              where: {id: vehicleId},
+              data: {
+                vehicleGrade: checkCodes["vehicleGrade"] || null,
+                capacityKwh: checkCodes["capacityKwh"] || null,
+              },
+            });
+          }
+          return prisma.vehicleOptions.upsert({
+            where: {
+              vehicleId_code: {
+                vehicleId: vehicleId,
+                code: vehicleKind,
+              },
+            },
+            update: {
+              code: vehicleKind,
+            },
+            create: {
+              vehicleId: vehicleId,
+              code: vehicleKind,
+            },
+          });
+        })
+      );
     })
-  });
+  );
 
 
   return NextResponse.json({

@@ -74,15 +74,17 @@ export default function TeslaSettingsForm({initial}: Props) {
     }
 
     async function onDisconnect() {
-        if (!confirm("Tesla連携を解除します。トークン/設定/車両情報が削除されます。よろしいですか？")) return;
+        if (!confirm("アカウントを削除します。全てのデータ（車両情報・日次データ・トークン・設定）が完全に削除され、復元できません。本当によろしいですか？")) return;
+        if (!confirm("最終確認：この操作は取り消せません。本当に削除しますか？")) return;
+
         setSaving(true);
         setMsg("");
         try {
             await disconnectTesla();
-            setMsg("Tesla連携を解除しました。");
-        } catch (e: any) {
-            setMsg(`解除に失敗: ${e?.message ?? String(e)}`);
-        } finally {
+            alert("アカウントの削除が完了しました。ログイン画面に移動します。");
+            window.location.href = "https://zees.blog/dashboard/consent";
+        } catch (e: unknown) {
+            setMsg(`削除に失敗: ${e instanceof Error ? e.message : String(e)}`);
             setSaving(false);
         }
     }
