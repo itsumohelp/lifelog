@@ -208,7 +208,35 @@ export async function GET(req: Request) {
     // ✅ 同意フラグは使い切りにする（再利用・なりすまし防止）
     session.pendingTeslaAutoConsent = false;
     session.teslaDesiredMode = "MANUAL"; // ここは好み（AUTOのままでもいい）
+    await session.save();
   }
 
-  return NextResponse.redirect(new URL("/dashboard", process.env.DOMAIN));
+  // 既に車両情報が確認済みかチェック
+  const existingAccount = await prisma.teslaAccount.findUnique({
+    where: {teslaSub: sub},
+    include: {
+      vehicles: {
+        include: {
+          override: true,
+        },
+      },
+    },
+  });
+
+  // 車両が存在し、全て確認済みなら車両一覧へ（1台の場合は直接ダッシュボードへ）
+  const allConfirmed =
+    existingAccount &&
+    existingAccount.vehicles.length > 0 &&
+    existingAccount.vehicles.every((v) => v.override?.confirmedAt);
+
+  if (allConfirmed) {
+    if (existingAccount.vehicles.length === 1) {
+      return NextResponse.redirect(
+        new URL(`/dashboard/${existingAccount.vehicles[0].teslaVehicleId.toString()}`, process.env.DOMAIN)
+      );
+    }
+    return NextResponse.redirect(new URL("/vehicles", process.env.DOMAIN));
+  }
+
+  return NextResponse.redirect(new URL("/vehicles/confirm", process.env.DOMAIN));
 }
