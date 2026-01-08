@@ -55,7 +55,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
         ? `${displayName}の走行距離: ${odometerKm} km - Marsflare Tesla Dashboard`
         : `${displayName} - Marsflare Tesla Dashboard`;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://marsflare.space";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://itsumo.help";
     const ogImageUrl = `${baseUrl}/api/og/${id}`;
 
     return {
