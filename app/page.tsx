@@ -4,8 +4,8 @@ export default function Home() {
     return (
         <main style={{
             minHeight: "100vh",
-            background: "linear-gradient(to bottom, #0f172a, #1e293b)",
-            color: "#ffffff",
+            background: "#ffffff",
+            color: "#1e293b",
         }}>
             <div style={{
                 maxWidth: "448px",
@@ -36,13 +36,13 @@ export default function Home() {
                         fontSize: "28px",
                         fontWeight: "bold",
                         letterSpacing: "-0.025em",
-                        color: "#ffffff",
+                        color: "#0f172a",
                     }}>
                         Marsflare
                     </h1>
                     <p style={{
                         marginTop: "8px",
-                        color: "#94a3b8",
+                        color: "#64748b",
                         fontSize: "14px",
                     }}>
                         あなたのTeslaを、もっとスマートに。
@@ -65,27 +65,28 @@ export default function Home() {
                             gap: "16px",
                             padding: "16px",
                             borderRadius: "12px",
-                            background: "rgba(255,255,255,0.05)",
+                            background: "#f8fafc",
+                            border: "1px solid #e2e8f0",
                         }}>
                             <div style={{
                                 flexShrink: 0,
                                 width: "40px",
                                 height: "40px",
                                 borderRadius: "8px",
-                                background: "rgba(249,115,22,0.2)",
+                                background: "rgba(249,115,22,0.1)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}>
-                                <svg style={{width: "20px", height: "20px", color: "#fb923c"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg style={{width: "20px", height: "20px", color: "#f97316"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                             </div>
                             <div>
-                                <h3 style={{fontWeight: 600, color: "#ffffff", fontSize: "15px"}}>
+                                <h3 style={{fontWeight: 600, color: "#0f172a", fontSize: "15px"}}>
                                     バッテリー・走行距離を記録
                                 </h3>
-                                <p style={{fontSize: "13px", color: "#94a3b8", marginTop: "4px"}}>
+                                <p style={{fontSize: "13px", color: "#64748b", marginTop: "4px"}}>
                                     毎日のバッテリー残量と走行距離を自動で記録。推移をグラフで確認できます。
                                 </p>
                             </div>
@@ -97,27 +98,28 @@ export default function Home() {
                             gap: "16px",
                             padding: "16px",
                             borderRadius: "12px",
-                            background: "rgba(255,255,255,0.05)",
+                            background: "#f8fafc",
+                            border: "1px solid #e2e8f0",
                         }}>
                             <div style={{
                                 flexShrink: 0,
                                 width: "40px",
                                 height: "40px",
                                 borderRadius: "8px",
-                                background: "rgba(59,130,246,0.2)",
+                                background: "rgba(59,130,246,0.1)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}>
-                                <svg style={{width: "20px", height: "20px", color: "#60a5fa"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg style={{width: "20px", height: "20px", color: "#3b82f6"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                 </svg>
                             </div>
                             <div>
-                                <h3 style={{fontWeight: 600, color: "#ffffff", fontSize: "15px"}}>
+                                <h3 style={{fontWeight: 600, color: "#0f172a", fontSize: "15px"}}>
                                     電費を自動計算
                                 </h3>
-                                <p style={{fontSize: "13px", color: "#94a3b8", marginTop: "4px"}}>
+                                <p style={{fontSize: "13px", color: "#64748b", marginTop: "4px"}}>
                                     走行距離と消費電力から電費（km/kWh）を算出。効率的なドライブをサポート。
                                 </p>
                             </div>
@@ -129,27 +131,28 @@ export default function Home() {
                             gap: "16px",
                             padding: "16px",
                             borderRadius: "12px",
-                            background: "rgba(255,255,255,0.05)",
+                            background: "#f8fafc",
+                            border: "1px solid #e2e8f0",
                         }}>
                             <div style={{
                                 flexShrink: 0,
                                 width: "40px",
                                 height: "40px",
                                 borderRadius: "8px",
-                                background: "rgba(168,85,247,0.2)",
+                                background: "rgba(168,85,247,0.1)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                             }}>
-                                <svg style={{width: "20px", height: "20px", color: "#c084fc"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg style={{width: "20px", height: "20px", color: "#a855f7"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
                             <div>
-                                <h3 style={{fontWeight: 600, color: "#ffffff", fontSize: "15px"}}>
+                                <h3 style={{fontWeight: 600, color: "#0f172a", fontSize: "15px"}}>
                                     安全なデータ管理
                                 </h3>
-                                <p style={{fontSize: "13px", color: "#94a3b8", marginTop: "4px"}}>
+                                <p style={{fontSize: "13px", color: "#64748b", marginTop: "4px"}}>
                                     Tesla公式OAuthで認証。VINや位置情報は取得しません。
                                 </p>
                             </div>
@@ -180,7 +183,7 @@ export default function Home() {
                     <p style={{
                         textAlign: "center",
                         fontSize: "12px",
-                        color: "#64748b",
+                        color: "#94a3b8",
                     }}>
                         ログインにはTeslaアカウントが必要です
                     </p>
@@ -190,10 +193,10 @@ export default function Home() {
                 <footer style={{
                     marginTop: "32px",
                     paddingTop: "24px",
-                    borderTop: "1px solid rgba(100,116,139,0.3)",
+                    borderTop: "1px solid #e2e8f0",
                     textAlign: "center",
                 }}>
-                    <p style={{fontSize: "12px", color: "#64748b"}}>
+                    <p style={{fontSize: "12px", color: "#94a3b8"}}>
                         Marsflare は Tesla, Inc. の公式サービスではありません。
                     </p>
                 </footer>
