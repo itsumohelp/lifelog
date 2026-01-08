@@ -173,6 +173,30 @@ export async function disconnectTesla() {
   return {ok: true as const};
 }
 
+export async function updateVehiclePublic(vehicleId: string, isPublic: boolean) {
+  const teslaSub = await requireTeslaSub();
+
+  // 車両がログインユーザーに属するか確認
+  const vehicle = await prisma.teslaVehicle.findUnique({
+    where: {id: vehicleId},
+    include: {teslaAccount: true},
+  });
+
+  if (!vehicle || vehicle.teslaAccount.teslaSub !== teslaSub) {
+    throw new Error("Vehicle not found or unauthorized");
+  }
+
+  // TeslaVehicleOverrideをupsert
+  await prisma.teslaVehicleOverride.upsert({
+    where: {vehicleId},
+    update: {isPublic},
+    create: {vehicleId, isPublic},
+  });
+
+  revalidatePath("/setting/tesla");
+  return {ok: true as const};
+}
+
 export async function agreeAndStartTeslaLogin(input: {
   consentUnderstand: boolean;
   consentStoreToken: boolean;

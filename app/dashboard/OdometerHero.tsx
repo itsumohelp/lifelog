@@ -1,11 +1,7 @@
-import {Codes} from "../static/Codes";
-import {badge, Vehicle} from "./vehicle-cards";
-
 type Props = {
     vehicleId: string;
     odometerKm: number | null;
     deltaKm: number | null;
-    vehicleGrade: string | null;
     hideVehicleTag?: boolean;
 };
 
@@ -13,20 +9,17 @@ function formatKm(n: number) {
     return n.toLocaleString("ja-JP", {maximumFractionDigits: 0});
 }
 
-export function OdometerHero({vehicleId, odometerKm, deltaKm, vehicleGrade, hideVehicleTag = false}: Props) {
+export function OdometerHero({vehicleId, odometerKm, deltaKm, hideVehicleTag = false}: Props) {
     const isMissing = odometerKm == null;
-
-    const sign =
-        deltaKm == null ? null : deltaKm > 0 ? "+" : deltaKm < 0 ? "−" : "";
     const abs = deltaKm == null ? null : Math.abs(deltaKm);
 
     return (
         <section className="rounded-2xl bg-gradient-to-b from-slate-50 to-white" style={{ width: "100%", paddingBottom: 4 }}>
-            <div>
-                <span key="vehicleId" className="flex items-center gap-2">
-                    {badge(vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}{!hideVehicleTag && <span style={{fontSize: "12px", color: "#6b7280", padding: "0 2px 0 0"}}>{vehicleId}</span>}
-                </span>
-            </div>
+            {!hideVehicleTag && (
+                <div>
+                    <span style={{fontSize: "12px", color: "#6b7280", padding: "0 2px 0 0"}}>{vehicleId}</span>
+                </div>
+            )}
 
             <div className="flex items-baseline gap-2 justify-center">
                 <div className="text-5xl font-extrabold tracking-tight">

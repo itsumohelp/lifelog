@@ -23,6 +23,12 @@ export default async function TeslaSettingsPage() {
         include: {
             settings: true,
             authToken: true,
+            vehicles: {
+                orderBy: {lastSeenAt: "desc"},
+                include: {
+                    override: true,
+                },
+            },
         },
     });
 
@@ -39,6 +45,14 @@ export default async function TeslaSettingsPage() {
     const consentGivenAt = account.settings?.consentGivenAt?.toISOString() ?? null;
     const consentVersion = account.settings?.consentVersion ?? null;
 
+    // 車両データをクライアントに渡せる形に変換（BigIntをstringに）
+    const vehicles = account.vehicles.map((v) => ({
+        id: v.id,
+        teslaVehicleId: v.teslaVehicleId.toString(),
+        displayName: v.override?.displayName ?? v.displayName ?? "名称未設定",
+        isPublic: v.override?.isPublic ?? false,
+    }));
+
     return (
         <main style={{padding: 16, maxWidth: 760}}>
             <h1>Tesla連携設定</h1>
@@ -48,6 +62,7 @@ export default async function TeslaSettingsPage() {
                     consentGivenAt,
                     consentVersion,
                 }}
+                vehicles={vehicles}
             />
         </main>
     );

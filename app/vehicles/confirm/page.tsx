@@ -20,9 +20,15 @@ export type VehicleWithOverride = {
     } | null;
 };
 
-export default async function VehicleConfirmPage() {
+type Props = {
+    searchParams: Promise<{edit?: string}>;
+};
+
+export default async function VehicleConfirmPage({searchParams}: Props) {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
     const teslaSub = session.teslaSub;
+    const {edit} = await searchParams;
+    const isEditMode = edit === "true";
 
     if (!teslaSub) {
         redirect("/");
@@ -44,14 +50,17 @@ export default async function VehicleConfirmPage() {
         redirect("/dashboard");
     }
 
-    // 未確認の車両があるかチェック
-    const hasUnconfirmed = account.vehicles.some(
-        (v) => !v.override?.confirmedAt
-    );
+    // 編集モードでない場合のみ、確認済みチェックを行う
+    if (!isEditMode) {
+        // 未確認の車両があるかチェック
+        const hasUnconfirmed = account.vehicles.some(
+            (v) => !v.override?.confirmedAt
+        );
 
-    // 全車両確認済みならダッシュボードへ
-    if (!hasUnconfirmed) {
-        redirect("/dashboard");
+        // 全車両確認済みならダッシュボードへ
+        if (!hasUnconfirmed) {
+            redirect("/dashboard");
+        }
     }
 
     // BigIntをstringに変換してクライアントに渡せる形式に

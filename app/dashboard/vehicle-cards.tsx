@@ -106,7 +106,7 @@ export default function VehicleCards({
                     >
 
                         <div style={{display: "flex", justifyContent: "center"}}>
-                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} vehicleGrade={v.override?.vehicleGrade ?? v.vehicleGrade ?? null} hideVehicleTag={hideVehicleTag} />
+                            <OdometerHero vehicleId={key} odometerKm={today?.odometerKm} deltaKm={today?.odometerKm != null && yesterday?.odometerKm != null ? today.odometerKm - yesterday.odometerKm : null} hideVehicleTag={hideVehicleTag} />
                         </div>
                         {/* バッテリーゲージ + 走行可能距離 */}
                         <div style={{
