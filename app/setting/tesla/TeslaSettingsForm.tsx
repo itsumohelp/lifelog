@@ -1,8 +1,15 @@
 "use client";
 
-import {useMemo, useState} from "react";
-import {saveTeslaSettings, deleteStoredToken, disconnectTesla, agreeAndStartTeslaLogin} from "./actions";
+import {useState} from "react";
+import {saveTeslaSettings, deleteStoredToken, disconnectTesla, agreeAndStartTeslaLogin, updateVehiclePublic} from "./actions";
 import React from "react";
+
+type VehicleInfo = {
+    id: string;
+    teslaVehicleId: string;
+    displayName: string;
+    isPublic: boolean;
+};
 
 type Props = {
     initial: {
@@ -10,14 +17,18 @@ type Props = {
         consentGivenAt: string | null;
         consentVersion: string | null;
     };
+    vehicles: VehicleInfo[];
 };
 
-export default function TeslaSettingsForm({initial}: Props) {
+export default function TeslaSettingsForm({initial, vehicles}: Props) {
     const [mode, setMode] = useState<Props["initial"]["mode"]>(initial.mode);
     const [consentUnderstand, setConsentUnderstand] = useState(false);
     const [consentStoreToken, setConsentStoreToken] = useState(false);
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<string>("");
+    const [vehiclePublicStates, setVehiclePublicStates] = useState<Record<string, boolean>>(
+        Object.fromEntries(vehicles.map(v => [v.id, v.isPublic]))
+    );
 
     const canSelectAuto = consentUnderstand && consentStoreToken;
 
@@ -27,6 +38,18 @@ export default function TeslaSettingsForm({initial}: Props) {
             setConsentStoreToken(true);
         }
     }, []);
+
+    async function onTogglePublic(vehicleId: string, isPublic: boolean) {
+        setSaving(true);
+        try {
+            await updateVehiclePublic(vehicleId, isPublic);
+            setVehiclePublicStates(prev => ({...prev, [vehicleId]: isPublic}));
+        } catch (e: any) {
+            alert(`公開設定の更新に失敗: ${e?.message ?? String(e)}`);
+        } finally {
+            setSaving(false);
+        }
+    }
 
     async function onAgreeAndLogin() {
         setSaving(true);
@@ -91,6 +114,64 @@ export default function TeslaSettingsForm({initial}: Props) {
 
     return (
         <section style={{display: "grid", gap: 14}}>
+            {/* 車両公開設定 - 一番上に配置 */}
+            {vehicles.length > 0 && (
+                <div style={card}>
+                    <div style={{fontWeight: 700, marginBottom: 12}}>ダッシュボード公開設定</div>
+                    <div style={{fontSize: 13, color: "#6b7280", marginBottom: 12}}>
+                        公開すると、URLを知っている人は誰でもダッシュボードを閲覧できます。
+                    </div>
+                    {vehicles.map(vehicle => (
+                        <div key={vehicle.id} style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "10px 0",
+                            borderBottom: "1px solid #f3f4f6",
+                        }}>
+                            <div>
+                                <div style={{fontWeight: 500}}>{vehicle.displayName}</div>
+                                <div style={{fontSize: 12, color: "#9ca3af"}}>ID: {vehicle.teslaVehicleId}</div>
+                            </div>
+                            <label style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                cursor: "pointer",
+                            }}>
+                                <span style={{fontSize: 13, color: vehiclePublicStates[vehicle.id] ? "#059669" : "#6b7280"}}>
+                                    {vehiclePublicStates[vehicle.id] ? "公開中" : "非公開"}
+                                </span>
+                                <div
+                                    onClick={() => !saving && onTogglePublic(vehicle.id, !vehiclePublicStates[vehicle.id])}
+                                    style={{
+                                        width: 44,
+                                        height: 24,
+                                        borderRadius: 12,
+                                        background: vehiclePublicStates[vehicle.id] ? "#10b981" : "#d1d5db",
+                                        position: "relative",
+                                        cursor: saving ? "not-allowed" : "pointer",
+                                        transition: "background 0.2s",
+                                    }}
+                                >
+                                    <div style={{
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 10,
+                                        background: "white",
+                                        position: "absolute",
+                                        top: 2,
+                                        left: vehiclePublicStates[vehicle.id] ? 22 : 2,
+                                        transition: "left 0.2s",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                                    }} />
+                                </div>
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             <div style={card}>
                 <div style={{fontWeight: 700}}>現在の状態</div>
                 <div style={{color: "#374151", fontSize: 14}}>

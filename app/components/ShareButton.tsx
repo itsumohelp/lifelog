@@ -1,27 +1,35 @@
 "use client";
 
 import {useState, useEffect} from "react";
+import {usePathname} from "next/navigation";
 
 export default function ShareButton() {
-    const [accountId, setAccountId] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [isPublic, setIsPublic] = useState<boolean | null>(null);
+    const pathname = usePathname();
+
+    // パスから vehicleTag を抽出（/dashboard/[vehicleTag] の形式）
+    const match = pathname.match(/^\/dashboard\/(\d+)/);
+    const vehicleTag = match?.[1] ?? null;
 
     useEffect(() => {
-        // アカウントIDを取得
-        fetch("/api/account/me")
+        if (!vehicleTag) return;
+
+        // 公開状態を確認
+        fetch(`/api/vehicle/${vehicleTag}/public-status`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-                if (data?.id) {
-                    setAccountId(data.id);
+                if (data !== null) {
+                    setIsPublic(data.isPublic);
                 }
             })
             .catch(() => {});
-    }, []);
+    }, [vehicleTag]);
 
     async function handleShare() {
-        if (!accountId) return;
+        if (!vehicleTag) return;
 
-        const url = `${window.location.origin}/public/${accountId}`;
+        const url = `${window.location.origin}/public/${vehicleTag}`;
 
         try {
             await navigator.clipboard.writeText(url);
@@ -32,7 +40,8 @@ export default function ShareButton() {
         }
     }
 
-    if (!accountId) return null;
+    // ダッシュボードページでない場合、または公開されていない場合は表示しない
+    if (!vehicleTag || isPublic !== true) return null;
 
     return (
         <div style={{ position: "relative" }}>

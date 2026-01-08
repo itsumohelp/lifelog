@@ -125,7 +125,7 @@ export default async function VehiclesPage() {
                     <SyncAndEditButton />
                     <div className="text-center">
                         <Link
-                            href="/vehicles/confirm"
+                            href="/vehicles/confirm?edit=true"
                             className="text-blue-600 hover:text-blue-800 text-sm"
                         >
                             再取得せずに車両情報を編集

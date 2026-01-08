@@ -1,36 +1,35 @@
 import {ImageResponse} from "next/og";
+import {NextResponse} from "next/server";
 import {prisma} from "@/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET(
     request: Request,
-    {params}: {params: Promise<{id: string}>}
+    {params}: {params: Promise<{vehicleTag: string}>}
 ) {
-    const {id} = await params;
+    const {vehicleTag} = await params;
 
-    // アカウント情報を取得
-    const account = await prisma.teslaAccount.findUnique({
-        where: {id},
+    // vehicleTag（teslaVehicleId）で車両を検索
+    const vehicle = await prisma.teslaVehicle.findUnique({
+        where: {teslaVehicleId: BigInt(vehicleTag)},
         include: {
-            vehicles: {
-                orderBy: {lastSeenAt: "desc"},
-                take: 1,
-                include: {
-                    override: true,
-                },
-            },
-            dailySnapshot: {
-                orderBy: {snapshotDate: "desc"},
-                take: 1,
-            },
+            override: true,
         },
     });
 
-    // データがない場合のデフォルト表示
-    const vehicle = account?.vehicles?.[0];
-    const snapshot = account?.dailySnapshot?.[0];
-    const displayName = vehicle?.override?.displayName ?? vehicle?.displayName ?? "My Tesla";
+    // 車両が存在しない、または公開されていない場合は404
+    if (!vehicle || !vehicle.override?.isPublic) {
+        return new NextResponse("Not Found", {status: 404});
+    }
+
+    // 最新の日次スナップショットを取得
+    const snapshot = await prisma.teslaVehicleDailySnapshot.findFirst({
+        where: {teslaVehicleId: vehicle.teslaVehicleId},
+        orderBy: {snapshotDate: "desc"},
+    });
+
+    const displayName = vehicle.override?.displayName ?? vehicle.displayName ?? "My Tesla";
     const odometerKm = snapshot?.odometerKm ? Math.round(snapshot.odometerKm) : null;
 
     return new ImageResponse(

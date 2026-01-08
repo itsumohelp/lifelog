@@ -6,7 +6,7 @@ import Link from "next/link";
 import {prisma} from "@/prisma";
 import {sessionOptions, type SessionData} from "@/app/lib/session";
 import SyncDailyButton from "../sync-daily-button";
-import VehicleCards, {Vehicle} from "../vehicle-cards";
+import VehicleCards, {Vehicle, badge} from "../vehicle-cards";
 import BatteryRangeChart from "../BatteryRangeChart";
 import AddToHomeButton from "@/app/components/AddToHomeButton";
 
@@ -158,6 +158,7 @@ export default async function VehicleDashboardPage({params}: Props) {
                     </Link>
                     <span style={{color: "#9ca3af"}}>|</span>
                     <span style={{fontWeight: 600, color: "#111827"}}>{displayName}</span>
+                    {badge(vehicle.override?.vehicleGrade ?? vehicle.vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}
                 </div>
                 <AddToHomeButton />
             </div>
