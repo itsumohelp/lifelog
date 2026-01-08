@@ -8,6 +8,7 @@ import {sessionOptions, type SessionData} from "@/app/lib/session";
 import SyncDailyButton from "../sync-daily-button";
 import VehicleCards, {Vehicle} from "../vehicle-cards";
 import BatteryRangeChart from "../BatteryRangeChart";
+import AddToHomeButton from "@/app/components/AddToHomeButton";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -127,35 +128,38 @@ export default async function VehicleDashboardPage({params}: Props) {
     return (
         <main style={{padding: "3px 10px 0px 10px", display: "grid", gap: 16}}>
             {/* ヘッダー: 車両一覧へ戻るリンク */}
-            <div style={{display: "flex", alignItems: "center", gap: 8, paddingTop: 8}}>
-                <Link
-                    href="/vehicles"
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        color: "#3b82f6",
-                        textDecoration: "none",
-                        fontSize: 14,
-                    }}
-                >
-                    <svg
-                        style={{width: 16, height: 16}}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+            <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8}}>
+                <div style={{display: "flex", alignItems: "center", gap: 8}}>
+                    <Link
+                        href="/vehicles"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                            color: "#3b82f6",
+                            textDecoration: "none",
+                            fontSize: 14,
+                        }}
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                    車両一覧
-                </Link>
-                <span style={{color: "#9ca3af"}}>|</span>
-                <span style={{fontWeight: 600, color: "#111827"}}>{displayName}</span>
+                        <svg
+                            style={{width: 16, height: 16}}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        車両一覧
+                    </Link>
+                    <span style={{color: "#9ca3af"}}>|</span>
+                    <span style={{fontWeight: 600, color: "#111827"}}>{displayName}</span>
+                </div>
+                <AddToHomeButton />
             </div>
 
             <VehicleCards

@@ -46,24 +46,6 @@ async function getRemoteGetKey(): Promise<JWTVerifyGetKey> {
   return getKey;
 }
 
-const CONSENT_VERSION = "2025-12-17.v1";
-
-function requireEnv(name: string): string {
-  const v = process.env[name];
-  if (!v) throw new Error(`${name} is not set`);
-  return v;
-}
-
-function extractSubUnsafe(idToken: string): string {
-  const parts = idToken.split(".");
-  if (parts.length < 2) throw new Error("invalid id_token");
-  const payloadJson = Buffer.from(parts[1], "base64url").toString("utf8");
-  const payload = JSON.parse(payloadJson);
-  const sub = payload?.sub;
-  if (!sub) throw new Error("sub missing in id_token");
-  return sub;
-}
-
 async function verifyAndGetSubFromIdToken(idToken: string): Promise<string> {
   const clientId = process.env.TESLA_CLIENT_ID;
   if (!clientId) throw new Error("TESLA_CLIENT_ID is not set");
@@ -160,32 +142,30 @@ export async function GET(req: Request) {
   session.tesla.expires_at = expiresAtIso;
   await session.save();
 
+  // 4) 同意情報をDBに保存（ログイン前に同意画面で保存されたpendingデータを永続化）
+  const hasPendingConsent = session.pendingConsentVersion && session.pendingConsentGivenAt;
 
-
-  const shouldStoreForAuto =
-    session.pendingTeslaAutoConsent === true && session.teslaDesiredMode === "AUTO";
-
-  if (shouldStoreForAuto) {
+  if (hasPendingConsent) {
     // TeslaAccount upsert
     const account = await prisma.teslaAccount.upsert({
-      where: {teslaSub: session.teslaSub},
+      where: {teslaSub: sub},
       update: {},
-      create: {teslaSub: session.teslaSub},
+      create: {teslaSub: sub},
     });
 
-    // TeslaSettings（AUTO + 同意ログ）
+    // TeslaSettings（同意情報を保存）
     await prisma.teslaSettings.upsert({
       where: {teslaAccountId: account.id},
       update: {
-        mode: "AUTO",
-        consentGivenAt: new Date(),
-        consentVersion: CONSENT_VERSION,
+        mode: session.pendingTeslaMode ?? "MANUAL",
+        consentGivenAt: new Date(session.pendingConsentGivenAt!),
+        consentVersion: session.pendingConsentVersion!,
       },
       create: {
         teslaAccountId: account.id,
-        mode: "AUTO",
-        consentGivenAt: new Date(),
-        consentVersion: CONSENT_VERSION,
+        mode: session.pendingTeslaMode ?? "MANUAL",
+        consentGivenAt: new Date(session.pendingConsentGivenAt!),
+        consentVersion: session.pendingConsentVersion!,
       },
     });
 
@@ -205,31 +185,31 @@ export async function GET(req: Request) {
       },
     });
 
-    // ✅ 同意フラグは使い切りにする（再利用・なりすまし防止）
-    session.pendingTeslaAutoConsent = false;
-    session.teslaDesiredMode = "MANUAL"; // ここは好み（AUTOのままでもいい）
+    // ✅ 同意フラグは使い切りにする（再利用防止）
+    session.pendingConsentVersion = undefined;
+    session.pendingConsentGivenAt = undefined;
+    session.pendingTeslaMode = undefined;
     await session.save();
   }
 
-  // 既に車両情報が確認済みかチェック
+  // 既存ユーザーかチェック（日次データが1件でもあれば確認画面をスキップ）
   const existingAccount = await prisma.teslaAccount.findUnique({
     where: {teslaSub: sub},
     include: {
-      vehicles: {
-        include: {
-          override: true,
-        },
+      vehicles: true,
+      dailySnapshot: {
+        take: 1,
       },
     },
   });
 
-  // 車両が存在し、全て確認済みなら車両一覧へ（1台の場合は直接ダッシュボードへ）
-  const allConfirmed =
+  // 日次データが存在する = 既存ユーザー → 確認画面をスキップ
+  const hasExistingData =
     existingAccount &&
     existingAccount.vehicles.length > 0 &&
-    existingAccount.vehicles.every((v) => v.override?.confirmedAt);
+    existingAccount.dailySnapshot.length > 0;
 
-  if (allConfirmed) {
+  if (hasExistingData) {
     if (existingAccount.vehicles.length === 1) {
       return NextResponse.redirect(
         new URL(`/dashboard/${existingAccount.vehicles[0].teslaVehicleId.toString()}`, process.env.DOMAIN)

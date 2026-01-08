@@ -11,8 +11,8 @@ export default function TeslaConsentPage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(to bottom, #0f172a, #1e293b)",
-        color: "#ffffff",
+        background: "#ffffff",
+        color: "#1e293b",
       }}
     >
       <div
@@ -25,11 +25,11 @@ export default function TeslaConsentPage() {
         {/* ヘッダー */}
         <header style={{ textAlign: "center", marginBottom: "24px" }}>
           <h1
-            style={{ fontSize: "22px", fontWeight: "bold", color: "#ffffff" }}
+            style={{ fontSize: "22px", fontWeight: "bold", color: "#0f172a" }}
           >
             利用規約
           </h1>
-          <p style={{ marginTop: "8px", color: "#94a3b8", fontSize: "14px" }}>
+          <p style={{ marginTop: "8px", color: "#64748b", fontSize: "14px" }}>
             Tesla公式OAuthでログインし車両データを取得します。遵守していただきたい内容、禁止事項等を利用規約として、以下に定めます。
           </p>
         </header>
@@ -37,7 +37,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -48,7 +48,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: 0,
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
             lineHeight: "1.8",
           }}
@@ -61,7 +61,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -72,7 +72,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -84,7 +84,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -95,7 +95,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -107,7 +107,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -118,7 +118,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -138,7 +138,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -149,7 +149,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -161,7 +161,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -172,7 +172,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -188,7 +188,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -199,7 +199,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -211,7 +211,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -222,7 +222,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -233,7 +233,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -244,7 +244,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -255,7 +255,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -266,7 +266,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -279,11 +279,11 @@ export default function TeslaConsentPage() {
         <br />
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <h1
-            style={{ fontSize: "22px", fontWeight: "bold", color: "#ffffff" }}
+            style={{ fontSize: "22px", fontWeight: "bold", color: "#0f172a" }}
           >
             プライバシーポリシー
           </h1>
-          <p style={{ marginTop: "8px", color: "#94a3b8", fontSize: "14px" }}>
+          <p style={{ marginTop: "8px", color: "#64748b", fontSize: "14px" }}>
             個人情報の取り扱いについて以下に記載します。
           </p>
         </div>
@@ -291,7 +291,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -302,7 +302,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -314,7 +314,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -325,7 +325,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -353,14 +353,14 @@ export default function TeslaConsentPage() {
             marginTop: "16px",
             padding: "16px",
             borderRadius: "12px",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
           }}
         >
           <h2
             style={{
               fontWeight: 600,
-              color: "#ffffff",
+              color: "#0f172a",
               fontSize: "15px",
               marginBottom: "12px",
             }}
@@ -371,7 +371,7 @@ export default function TeslaConsentPage() {
             style={{
               margin: 0,
               paddingLeft: "20px",
-              color: "#cbd5e1",
+              color: "#475569",
               fontSize: "13px",
               lineHeight: "1.8",
             }}
@@ -384,7 +384,7 @@ export default function TeslaConsentPage() {
             <li>アクセストークン</li>
             <li>リフレッシュトークン</li>
           </ul>
-          <p style={{ marginTop: "12px", fontSize: "12px", color: "#64748b" }}>
+          <p style={{ marginTop: "12px", fontSize: "12px", color: "#94a3b8" }}>
             取得項目は変わる可能性があります。その際はお知らせします。
           </p>
         </section>
@@ -395,14 +395,14 @@ export default function TeslaConsentPage() {
             marginTop: "12px",
             padding: "16px",
             borderRadius: "12px",
-            background: "rgba(34,197,94,0.1)",
+            background: "rgba(34,197,94,0.08)",
             border: "1px solid rgba(34,197,94,0.2)",
           }}
         >
           <h2
             style={{
               fontWeight: 600,
-              color: "#4ade80",
+              color: "#16a34a",
               fontSize: "15px",
               marginBottom: "12px",
             }}
@@ -413,7 +413,7 @@ export default function TeslaConsentPage() {
             style={{
               margin: 0,
               paddingLeft: "20px",
-              color: "#86efac",
+              color: "#15803d",
               fontSize: "13px",
               lineHeight: "1.8",
             }}
@@ -428,7 +428,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -439,7 +439,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -451,7 +451,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -462,7 +462,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -474,7 +474,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -485,7 +485,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -503,7 +503,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -514,7 +514,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -525,7 +525,7 @@ export default function TeslaConsentPage() {
         <h2
           style={{
             fontWeight: 600,
-            color: "#ffffff",
+            color: "#0f172a",
             fontSize: "15px",
             marginBottom: "5px",
           }}
@@ -536,7 +536,7 @@ export default function TeslaConsentPage() {
           style={{
             margin: "0",
             paddingLeft: "20px",
-            color: "#cbd5e1",
+            color: "#475569",
             fontSize: "13px",
           }}
         >
@@ -547,13 +547,13 @@ export default function TeslaConsentPage() {
 
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <h1
-            style={{ fontSize: "22px", fontWeight: "bold", color: "#ffffff" }}
+            style={{ fontSize: "22px", fontWeight: "bold", color: "#0f172a" }}
           >
             情報発信
           </h1>
-          <p style={{ marginTop: "8px", color: "#94a3b8", fontSize: "14px" }}>
+          <p style={{ marginTop: "8px", color: "#64748b", fontSize: "14px" }}>
             不具合や取得項目追加は公式のディスコードサーバの
-            <a href="https://discord.gg/8fzAtaDj">announcements</a>
+            <a href="https://discord.gg/8fzAtaDj" style={{ color: "#f97316" }}>announcements</a>
             で行います。
             <br />
             URL https://discord.gg/8fzAtaDj
@@ -588,7 +588,7 @@ export default function TeslaConsentPage() {
             htmlFor="consent"
             style={{
               fontSize: "14px",
-              color: "#e2e8f0",
+              color: "#334155",
               cursor: "pointer",
             }}
           >
@@ -615,8 +615,8 @@ export default function TeslaConsentPage() {
               border: "none",
               background: checked
                 ? "linear-gradient(to right, #f97316, #dc2626)"
-                : "rgba(100,116,139,0.3)",
-              color: checked ? "#ffffff" : "#64748b",
+                : "#e2e8f0",
+              color: checked ? "#ffffff" : "#94a3b8",
               cursor: checked ? "pointer" : "not-allowed",
               boxShadow: checked
                 ? "0 10px 15px -3px rgba(249,115,22,0.3)"
@@ -632,7 +632,7 @@ export default function TeslaConsentPage() {
               display: "block",
               textAlign: "center",
               fontSize: "14px",
-              color: "#64748b",
+              color: "#94a3b8",
               textDecoration: "none",
             }}
           >
@@ -645,11 +645,11 @@ export default function TeslaConsentPage() {
           style={{
             marginTop: "32px",
             paddingTop: "24px",
-            borderTop: "1px solid rgba(100,116,139,0.3)",
+            borderTop: "1px solid #e2e8f0",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "12px", color: "#64748b" }}>
+          <p style={{ fontSize: "12px", color: "#94a3b8" }}>
             Marsflare は Tesla, Inc. の公式サービスではありません。
           </p>
         </footer>
