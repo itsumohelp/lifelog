@@ -142,17 +142,17 @@ export async function GET(req: Request) {
   session.tesla.expires_at = expiresAtIso;
   await session.save();
 
-  // 4) 同意情報をDBに保存（ログイン前に同意画面で保存されたpendingデータを永続化）
+  // 4) TeslaAccount upsert（全ユーザー共通）
+  const account = await prisma.teslaAccount.upsert({
+    where: {teslaSub: sub},
+    update: {},
+    create: {teslaSub: sub},
+  });
+
+  // 5) 同意情報をDBに保存（ログイン前に同意画面で保存されたpendingデータがある場合）
   const hasPendingConsent = session.pendingConsentVersion && session.pendingConsentGivenAt;
 
   if (hasPendingConsent) {
-    // TeslaAccount upsert
-    const account = await prisma.teslaAccount.upsert({
-      where: {teslaSub: sub},
-      update: {},
-      create: {teslaSub: sub},
-    });
-
     // TeslaSettings（同意情報を保存）
     await prisma.teslaSettings.upsert({
       where: {teslaAccountId: account.id},
@@ -169,28 +169,28 @@ export async function GET(req: Request) {
       },
     });
 
-    // refresh_token 保存（暗号化）
-    await prisma.teslaAuthToken.upsert({
-      where: {teslaAccountId: account.id},
-      update: {
-        refreshTokenEnc: encrypt(token.refresh_token ?? ""),
-        accessTokenEnc: encrypt(token.access_token),
-        expiresAt: new Date(expiresAtIso),
-      },
-      create: {
-        teslaAccountId: account.id,
-        refreshTokenEnc: encrypt(token.refresh_token ?? ""),
-        accessTokenEnc: encrypt(token.access_token),
-        expiresAt: new Date(expiresAtIso),
-      },
-    });
-
     // ✅ 同意フラグは使い切りにする（再利用防止）
     session.pendingConsentVersion = undefined;
     session.pendingConsentGivenAt = undefined;
     session.pendingTeslaMode = undefined;
     await session.save();
   }
+
+  // 6) トークン保存（暗号化）- 全ユーザー共通で毎回更新
+  await prisma.teslaAuthToken.upsert({
+    where: {teslaAccountId: account.id},
+    update: {
+      refreshTokenEnc: encrypt(token.refresh_token ?? ""),
+      accessTokenEnc: encrypt(token.access_token),
+      expiresAt: new Date(expiresAtIso),
+    },
+    create: {
+      teslaAccountId: account.id,
+      refreshTokenEnc: encrypt(token.refresh_token ?? ""),
+      accessTokenEnc: encrypt(token.access_token),
+      expiresAt: new Date(expiresAtIso),
+    },
+  });
 
   // 既存ユーザーかチェック（日次データが1件でもあれば確認画面をスキップ）
   const existingAccount = await prisma.teslaAccount.findUnique({
