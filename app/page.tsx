@@ -1,6 +1,27 @@
 import Link from "next/link";
+import {cookies} from "next/headers";
+import {getIronSession} from "iron-session";
+import {sessionOptions, type SessionData} from "@/app/lib/session";
+import {prisma} from "@/prisma";
 
-export default function Home() {
+export default async function Home() {
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+    const teslaSub = session.teslaSub;
+
+    // ログイン済みかつ車両があるか確認
+    let dashboardUrl: string | null = null;
+    if (teslaSub) {
+        const account = await prisma.teslaAccount.findUnique({
+            where: {teslaSub},
+            include: {vehicles: {take: 1}},
+        });
+        if (account && account.vehicles.length > 0) {
+            dashboardUrl = `/dashboard/${account.vehicles[0].teslaVehicleId.toString()}`;
+        } else if (account) {
+            dashboardUrl = "/vehicles";
+        }
+    }
+
     return (
         <main style={{
             minHeight: "100vh",
@@ -162,31 +183,54 @@ export default function Home() {
 
                 {/* CTAボタン */}
                 <div style={{display: "grid", gap: "12px"}}>
-                    <Link
-                        href="/dashboard/consent"
-                        style={{
-                            display: "block",
-                            width: "100%",
-                            padding: "16px 24px",
-                            textAlign: "center",
-                            fontWeight: 600,
-                            fontSize: "16px",
-                            borderRadius: "12px",
-                            background: "linear-gradient(to right, #f97316, #dc2626)",
-                            color: "#ffffff",
-                            textDecoration: "none",
-                            boxShadow: "0 10px 15px -3px rgba(249,115,22,0.3)",
-                        }}
-                    >
-                        Teslaアカウントでログイン
-                    </Link>
-                    <p style={{
-                        textAlign: "center",
-                        fontSize: "12px",
-                        color: "#94a3b8",
-                    }}>
-                        ログインにはTeslaアカウントが必要です
-                    </p>
+                    {dashboardUrl ? (
+                        <Link
+                            href={dashboardUrl}
+                            style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "16px 24px",
+                                textAlign: "center",
+                                fontWeight: 600,
+                                fontSize: "16px",
+                                borderRadius: "12px",
+                                background: "linear-gradient(to right, #f97316, #dc2626)",
+                                color: "#ffffff",
+                                textDecoration: "none",
+                                boxShadow: "0 10px 15px -3px rgba(249,115,22,0.3)",
+                            }}
+                        >
+                            ダッシュボードに移動する
+                        </Link>
+                    ) : (
+                        <>
+                            <Link
+                                href="/dashboard/consent"
+                                style={{
+                                    display: "block",
+                                    width: "100%",
+                                    padding: "16px 24px",
+                                    textAlign: "center",
+                                    fontWeight: 600,
+                                    fontSize: "16px",
+                                    borderRadius: "12px",
+                                    background: "linear-gradient(to right, #f97316, #dc2626)",
+                                    color: "#ffffff",
+                                    textDecoration: "none",
+                                    boxShadow: "0 10px 15px -3px rgba(249,115,22,0.3)",
+                                }}
+                            >
+                                Teslaアカウントでログイン
+                            </Link>
+                            <p style={{
+                                textAlign: "center",
+                                fontSize: "12px",
+                                color: "#94a3b8",
+                            }}>
+                                ログインにはTeslaアカウントが必要です
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* フッター */}

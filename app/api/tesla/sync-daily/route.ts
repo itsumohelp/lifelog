@@ -4,8 +4,7 @@ import {getIronSession} from "iron-session";
 import {prisma} from "@/prisma";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
-import {getTeslaMode} from "@/app/setting/tesla/actions";
-import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
+import {getAccessTokenFromDB, TokenRefreshError} from "@/app/lib/getAccessToken";
 import {syncVehiclesAndDailySnapshot} from "@/app/job/getDailyCheck/syncVehicles";
 
 function requireEnv(name: string): string {
@@ -152,16 +151,20 @@ export async function POST() {
     return NextResponse.json({ok: false, error: "tesla account not found"}, {status: 404});
   }
 
-  const SyncMode = await getTeslaMode(account.id);
-  let accessToken = session.tesla?.access_token;
-  if (SyncMode === "AUTO") {
+  let accessToken: string;
+  try {
     accessToken = await getAccessTokenFromDB(account.id);
-  }
-  if (!accessToken) {
-    return NextResponse.json({ok: false, error: "missing access token"}, {status: 401});
+  } catch (e) {
+    if (e instanceof TokenRefreshError && e.requiresReauth) {
+      return NextResponse.json(
+        {ok: false, error: e.message, requiresReauth: true},
+        {status: 401}
+      );
+    }
+    throw e;
   }
 
-  const results = await syncVehiclesAndDailySnapshot({teslaAccountId: account.id, accessToken: accessToken});
+  const results = await syncVehiclesAndDailySnapshot({teslaAccountId: account.id, accessToken});
 
   const snapshotDate = getJstDayKey(new Date());
 

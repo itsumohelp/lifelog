@@ -6,6 +6,7 @@ import Link from "next/link";
 import {prisma} from "@/prisma";
 import {sessionOptions, type SessionData} from "@/app/lib/session";
 import SyncAndEditButton from "./sync-and-edit-button";
+import HeaderMenu from "@/app/components/HeaderMenu";
 
 // JSTの日次キー
 function getJstDayKey(d = new Date()): Date {
@@ -60,9 +61,12 @@ export default async function VehiclesPage() {
     return (
         <main className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-2xl mx-auto">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">
-                    車両一覧
-                </h1>
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        車両一覧
+                    </h1>
+                    <HeaderMenu />
+                </div>
 
                 {vehicles.length === 0 ? (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center text-gray-500">

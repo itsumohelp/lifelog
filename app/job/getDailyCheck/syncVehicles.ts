@@ -1,8 +1,30 @@
 import {prisma} from "@/prisma";
-import {fetchVehicles, fetchVehicleData, fetchOptions} from "@/app/job/getDailyCheck/api";
+import {fetchVehicles, fetchVehicleData, fetchOptions, fetchChargingHistory, ChargingHistoryItem} from "@/app/job/getDailyCheck/api";
 import {milesToKm, rangeToKm} from "@/app/lib/utility";
 import {Codes} from "@/app/static/Codes";
 import {deriveAndUpdateDailySnapshot} from "@/app/lib/deriveDailyMetrics";
+
+/**
+ * 充電履歴から充電量（kWh）を抽出する
+ */
+function extractChargedKwh(items: ChargingHistoryItem[]): number {
+  let total = 0;
+  for (const item of items) {
+    // fees配列からusageBaseを合計（kWh）
+    if (item.fees && Array.isArray(item.fees)) {
+      for (const fee of item.fees) {
+        if (typeof fee.usageBase === "number" && fee.usageBase > 0) {
+          total += fee.usageBase;
+        }
+      }
+    }
+    // chargeDetails.energyDetails.energyAddedがある場合
+    if (item.chargeDetails?.energyDetails?.energyAdded) {
+      total += item.chargeDetails.energyDetails.energyAdded;
+    }
+  }
+  return total;
+}
 
 function startOfJstDay(date = new Date()) {
   // JSTで日次にしたい前提：DBはUTC保存でOK、境界をJSTで切る
@@ -148,6 +170,56 @@ export async function syncVehiclesAndDailySnapshot(params: {
     const insideTemp = data.climate_state?.inside_temp ?? null;
     const chargeEnergyAdded = data.charge_state?.charge_energy_added ?? null;
 
+    // 前日のスナップショットを取得（充電履歴判定用）
+    const prevSnapshot = await prisma.teslaVehicleDailySnapshot.findFirst({
+      where: {
+        teslaAccountId,
+        teslaVehicleId,
+        snapshotDate: {lt: snapshotDate},
+      },
+      orderBy: {snapshotDate: "desc"},
+      select: {
+        snapshotDate: true,
+        fetchedAt: true,
+        batteryLevel: true,
+      },
+    });
+
+    // 充電履歴から充電量を取得する条件:
+    // 1. 前日の実績がある
+    // 2. 電池残量が前回より増えている（充電した可能性）
+    // 3. VINが取得できる
+    let chargedKwhFromHistory: number | null = null;
+    let chargingHistoryFetched = false;
+
+    const vin = data.vin;
+    const prevBatteryLevel = prevSnapshot?.batteryLevel;
+    const batteryIncreased = typeof prevBatteryLevel === "number" &&
+                             typeof batteryLevel === "number" &&
+                             batteryLevel > prevBatteryLevel;
+
+    if (prevSnapshot && batteryIncreased && vin) {
+      // 前回のfetchedAtから現在までの充電履歴を取得
+      const startTime = prevSnapshot.fetchedAt.toISOString();
+      const endTime = new Date().toISOString();
+
+      const historyResult = await fetchChargingHistory(
+        accessToken,
+        vin,
+        startTime,
+        endTime,
+        teslaAccountId
+      );
+
+      if (historyResult.kind === "ok" && historyResult.data.length > 0) {
+        chargedKwhFromHistory = extractChargedKwh(historyResult.data);
+        if (chargedKwhFromHistory <= 0) {
+          chargedKwhFromHistory = null;
+        }
+      }
+      chargingHistoryFetched = true;
+    }
+
     await prisma.teslaVehicleDailySnapshot.upsert({
       where: {
         uniq_daily_snapshot: {
@@ -166,6 +238,8 @@ export async function syncVehiclesAndDailySnapshot(params: {
         outsideTemp,
         insideTemp,
         chargeEnergyAdded,
+        chargedKwhFromHistory,
+        chargingHistoryFetched,
         status: true,
       },
       create: {
@@ -181,6 +255,8 @@ export async function syncVehiclesAndDailySnapshot(params: {
         outsideTemp,
         insideTemp,
         chargeEnergyAdded,
+        chargedKwhFromHistory,
+        chargingHistoryFetched,
         status: true,
       },
     });
@@ -197,6 +273,7 @@ export async function syncVehiclesAndDailySnapshot(params: {
       outsideTemp,
       insideTemp,
       chargeEnergyAdded,
+      chargedKwhFromHistory,
     });
 
     results.push({
@@ -221,6 +298,7 @@ export async function upsertDailySnapshotAndDerive(data: {
   outsideTemp?: number | null;
   insideTemp?: number | null;
   chargeEnergyAdded?: number | null;
+  chargedKwhFromHistory?: number | null;
 }) {
   const {teslaAccountId, teslaVehicleId, snapshotDate, ...rest} = data;
 

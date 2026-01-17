@@ -91,6 +91,10 @@ model TeslaVehicleDailySnapshot {
   energyUsedKwh Float?
   efficiencyKmPerKwh Float?
   efficiencyType String?
+  // 充電履歴から取得した充電量（kWh）
+  chargedKwhFromHistory Float?
+  // 充電履歴取得済みフラグ
+  chargingHistoryFetched Boolean @default(false)
   @@unique([teslaAccountId, teslaVehicleId, snapshotDate], name: "uniq_daily_snapshot")
   @@index([teslaAccountId, snapshotDate])
 }

@@ -9,6 +9,7 @@ import SyncDailyButton from "../sync-daily-button";
 import VehicleCards, {Vehicle, badge} from "../vehicle-cards";
 import BatteryRangeChart from "../BatteryRangeChart";
 import AddToHomeButton from "@/app/components/AddToHomeButton";
+import HeaderMenu from "@/app/components/HeaderMenu";
 
 // JSTの日次キー（JST 00:00 をUTC Dateとして表現し、DBのキーに使う）
 function getJstDayKey(d = new Date()): Date {
@@ -160,7 +161,10 @@ export default async function VehicleDashboardPage({params}: Props) {
                     <span style={{fontWeight: 600, color: "#111827"}}>{displayName}</span>
                     {badge(vehicle.override?.vehicleGrade ?? vehicle.vehicleGrade ?? "RWD", "#ecfeff", "#0e7490")}
                 </div>
-                <AddToHomeButton />
+                <div style={{display: "flex", alignItems: "center", gap: 4}}>
+                    <AddToHomeButton />
+                    <HeaderMenu />
+                </div>
             </div>
 
             <VehicleCards
