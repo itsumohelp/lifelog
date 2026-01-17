@@ -12,6 +12,18 @@ type TeslaTokenRefreshResponse = {
   scope?: string;
 };
 
+// リフレッシュ失敗時に投げる専用エラー
+export class TokenRefreshError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+    public readonly requiresReauth: boolean = true
+  ) {
+    super(message);
+    this.name = "TokenRefreshError";
+  }
+}
+
 async function refreshTeslaAccessToken(refreshToken: string, clientId: string) {
   const res = await fetch(TESLA_TOKEN_ENDPOINT, {
     method: "POST",
@@ -25,7 +37,19 @@ async function refreshTeslaAccessToken(refreshToken: string, clientId: string) {
 
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(`Tesla token refresh failed: ${res.status} ${text}`);
+    // 401/403 はリフレッシュトークン無効 → 再認証必要
+    if (res.status === 401 || res.status === 403) {
+      throw new TokenRefreshError(
+        "リフレッシュトークンが無効です。再ログインが必要です。",
+        res.status,
+        true
+      );
+    }
+    throw new TokenRefreshError(
+      `Tesla token refresh failed: ${res.status} ${text}`,
+      res.status,
+      false
+    );
   }
   return JSON.parse(text) as TeslaTokenRefreshResponse;
 }
@@ -35,8 +59,12 @@ export async function getAccessTokenFromDB(teslaAccountId: string): Promise<stri
     where: {teslaAccountId},
   });
 
-  if (!row || !row.accessTokenEnc) {
-    throw new Error("Access token not found. Please re-login.");
+  if (!row || !row.refreshTokenEnc) {
+    throw new TokenRefreshError(
+      "トークンが保存されていません。再ログインが必要です。",
+      401,
+      true
+    );
   }
 
   const now = Date.now();

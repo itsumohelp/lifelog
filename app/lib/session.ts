@@ -25,7 +25,9 @@ export type SessionData = {
 export const sessionOptions = {
   cookieName: "tesla_app_session",
   password: process.env.APP_SESSION_SECRET!,
+  ttl: 60 * 60 * 24 * 45, // 45日間（リフレッシュトークンと同程度）
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 45, // 45日間
   },
 } satisfies SessionOptions;

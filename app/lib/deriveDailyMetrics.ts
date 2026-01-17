@@ -41,6 +41,7 @@ export async function deriveAndUpdateDailySnapshot(input: {
       batteryLevel: true,
       odometerKm: true,
       chargeEnergyAdded: true,
+      chargedKwhFromHistory: true, // 充電履歴から取得した充電量
     },
   });
 
@@ -88,25 +89,59 @@ export async function deriveAndUpdateDailySnapshot(input: {
   derived.odometerDeltaKm = odometerDelta !== null && Number.isFinite(odometerDelta) ? odometerDelta : null;
   derived.batteryDeltaPct = batteryDelta !== null && Number.isFinite(batteryDelta) ? Math.trunc(batteryDelta) : null;
 
-  // 推定電費（条件を満たす日だけ）
+  // 電費計算
   const odoOk = derived.odometerDeltaKm !== null && derived.odometerDeltaKm > 0.3;
-  const socOk = derived.batteryDeltaPct !== null && derived.batteryDeltaPct < 0; // 減少日だけ
 
-  const chargeAdded = typeof today.chargeEnergyAdded === "number" ? today.chargeEnergyAdded : null;
-  const chargingLikely = chargeAdded !== null && chargeAdded > 0.5; // ガード（後で調整）
+  // 充電履歴から取得した充電量がある場合
+  const chargedKwh = today.chargedKwhFromHistory;
+  const hasChargingHistory = typeof chargedKwh === "number" && chargedKwh > 0;
 
-  if (odoOk && socOk && !chargingLikely) {
+  if (odoOk && hasChargingHistory) {
+    // 充電履歴がある場合：
+    // 消費電力 = 充電量 + (バッテリー減少分 × バッテリー容量)
+    // ただしバッテリーが増えている場合は、純粋に充電量を使う
     const cap = await getCapacityKwh(teslaAccountId, teslaVehicleId);
     if (cap && cap > 0) {
-      const dropPct = clamp(-derived.batteryDeltaPct!, 0, 100); // 例: -5% → 5
-      const energyUsedKwh = cap * (dropPct / 100);
+      let energyUsedKwh: number;
 
-      // 0割回避
+      if (derived.batteryDeltaPct !== null && derived.batteryDeltaPct < 0) {
+        // バッテリーが減少している場合：充電量 + 減少分
+        const dropPct = clamp(-derived.batteryDeltaPct, 0, 100);
+        energyUsedKwh = chargedKwh! + (cap * dropPct / 100);
+      } else if (derived.batteryDeltaPct !== null && derived.batteryDeltaPct > 0) {
+        // バッテリーが増加している場合：充電量 - 増加分（走行で使った分）
+        const increasePct = clamp(derived.batteryDeltaPct, 0, 100);
+        energyUsedKwh = Math.max(0, chargedKwh! - (cap * increasePct / 100));
+      } else {
+        // バッテリーが変わらない場合：充電量がそのまま使われた
+        energyUsedKwh = chargedKwh!;
+      }
+
       if (energyUsedKwh > 0.05) {
         derived.energyUsedKwh = energyUsedKwh;
         derived.efficiencyKmPerKwh = derived.odometerDeltaKm! / energyUsedKwh;
-        derived.efficiencyType = "ESTIMATED";
+        derived.efficiencyType = "CHARGING_HISTORY";
       }
+    }
+  } else if (odoOk && derived.batteryDeltaPct !== null && derived.batteryDeltaPct < 0) {
+    // 従来のロジック：バッテリー減少日のみ推定
+    const chargeAdded = typeof today.chargeEnergyAdded === "number" ? today.chargeEnergyAdded : null;
+    const chargingLikely = chargeAdded !== null && chargeAdded > 0.5;
+
+    if (!chargingLikely) {
+      const cap = await getCapacityKwh(teslaAccountId, teslaVehicleId);
+      if (cap && cap > 0) {
+        const dropPct = clamp(-derived.batteryDeltaPct, 0, 100);
+        const energyUsedKwh = cap * (dropPct / 100);
+
+        if (energyUsedKwh > 0.05) {
+          derived.energyUsedKwh = energyUsedKwh;
+          derived.efficiencyKmPerKwh = derived.odometerDeltaKm! / energyUsedKwh;
+          derived.efficiencyType = "ESTIMATED";
+        }
+      }
+    } else {
+      derived.efficiencyType = "UNKNOWN";
     }
   } else {
     derived.efficiencyType = "UNKNOWN";

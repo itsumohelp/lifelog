@@ -4,7 +4,7 @@ import {getIronSession} from "iron-session";
 import {PrismaClient} from "@prisma/client";
 import {sessionOptions, SessionData} from "@/app/lib/session";
 import {fleetFetchLog} from "@/app/lib/fleetFetch";
-import {getAccessTokenFromDB} from "@/app/lib/getAccessToken";
+import {getAccessTokenFromDB, TokenRefreshError} from "@/app/lib/getAccessToken";
 import {Codes} from "@/app/static/Codes";
 
 const prisma = new PrismaClient();
@@ -74,12 +74,17 @@ export async function POST() {
     create: {teslaSub},
   });
 
-  const accessToken = await getAccessTokenFromDB(account.id);
-  if (!accessToken) {
-    return NextResponse.json(
-      {ok: false, error: "not authed (missing accessToken)"},
-      {status: 401}
-    );
+  let accessToken: string;
+  try {
+    accessToken = await getAccessTokenFromDB(account.id);
+  } catch (e) {
+    if (e instanceof TokenRefreshError && e.requiresReauth) {
+      return NextResponse.json(
+        {ok: false, error: e.message, requiresReauth: true},
+        {status: 401}
+      );
+    }
+    throw e;
   }
 
   // vehicles取得

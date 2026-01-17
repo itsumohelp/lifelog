@@ -19,7 +19,7 @@ export default function SyncDailyButton({alreadyFetchedToday = false}: Props) {
     const [loading, setLoading] = useState(false);
     const [fetched, setFetched] = useState(alreadyFetchedToday);
     const [feedback, setFeedback] = useState<{
-        type: "success" | "warning" | "error";
+        type: "success" | "warning" | "error" | "reauth";
         message: string;
     } | null>(null);
 
@@ -37,9 +37,17 @@ export default function SyncDailyButton({alreadyFetchedToday = false}: Props) {
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
                 console.error("Sync daily failed", json);
+                // 再認証が必要な場合
+                if (json.requiresReauth) {
+                    setFeedback({
+                        type: "reauth",
+                        message: json.error ?? "認証の有効期限が切れました。再ログインしてください。",
+                    });
+                    return;
+                }
                 setFeedback({
                     type: "error",
-                    message: `エラーが発生しました: ${json.message ?? res.status}`,
+                    message: `エラーが発生しました: ${json.error ?? res.status}`,
                 });
                 return;
             }
@@ -101,12 +109,32 @@ export default function SyncDailyButton({alreadyFetchedToday = false}: Props) {
                     padding: "10px 14px",
                     borderRadius: 8,
                     background: feedback.type === "success" ? "#dcfce7" :
-                               feedback.type === "warning" ? "#fef3c7" : "#fee2e2",
+                               feedback.type === "warning" ? "#fef3c7" :
+                               feedback.type === "reauth" ? "#fef3c7" : "#fee2e2",
                     color: feedback.type === "success" ? "#166534" :
-                           feedback.type === "warning" ? "#92400e" : "#991b1b",
+                           feedback.type === "warning" ? "#92400e" :
+                           feedback.type === "reauth" ? "#92400e" : "#991b1b",
                     fontSize: 14,
                 }}>
                     {feedback.message}
+                    {feedback.type === "reauth" && (
+                        <div style={{marginTop: 8}}>
+                            <a
+                                href="/api/tesla/login"
+                                style={{
+                                    display: "inline-block",
+                                    padding: "8px 16px",
+                                    background: "#1f2937",
+                                    color: "white",
+                                    borderRadius: 6,
+                                    textDecoration: "none",
+                                    fontSize: 13,
+                                }}
+                            >
+                                Teslaで再ログイン
+                            </a>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
